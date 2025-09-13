@@ -82,18 +82,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     })
 
-    // Таймаут для предотвращения зависания
-    const timeout = setTimeout(() => {
-      if (isMounted && loading) {
-        console.log('Auth: Loading timeout, setting loading to false')
-        setLoading(false)
-      }
-    }, 10000) // 10 секунд
-
     return () => {
       isMounted = false
       subscription.unsubscribe()
-      clearTimeout(timeout)
     }
   }, [])
 
@@ -101,25 +92,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       console.log('Auth: Fetching profile for user:', supabaseUser.id)
       
-      // Добавляем таймаут для запроса
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Request timeout')), 5000)
-      )
-      
-      const queryPromise = supabase
+      const { data, error } = await supabase
         .from('users')
         .select('*')
         .eq('id', supabaseUser.id)
         .single()
 
-      const { data, error } = await Promise.race([queryPromise, timeoutPromise]) as any
-
       if (error) {
         console.error('Auth: Error fetching user profile:', error)
         
         // Если пользователь не найден в таблице users, создаем его
-        if (error.code === 'PGRST116' || error.message === 'Request timeout') {
-          console.log('Auth: User not found or timeout, creating profile...')
+        if (error.code === 'PGRST116') {
+          console.log('Auth: User not found, creating profile...')
           
           // Создаем пользователя напрямую из данных Supabase Auth
           const userData = {
