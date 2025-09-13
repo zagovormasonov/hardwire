@@ -472,29 +472,29 @@ const Profile: React.FC = () => {
                   <div className="flex flex-col sm:flex-row gap-2 pt-2 border-t border-gray-600">
                     <Link 
                       to={`/product/${product.id}`}
-                      className="flex-1 btn btn-secondary text-center"
+                      className="flex-1 btn btn-secondary text-center flex items-center justify-center"
                     >
-                      <Eye className="w-4 h-4 mr-1" />
-                      Просмотр
+                      <Eye className="w-4 h-4 mr-2" />
+                      <span>Просмотр</span>
                     </Link>
                     <div className="flex gap-2">
                       <Link 
                         to={`/edit/${product.id}`}
-                        className="btn btn-secondary text-blue-400 hover:text-blue-300"
+                        className="btn btn-secondary text-blue-400 hover:text-blue-300 flex items-center justify-center"
                         title="Редактировать товар"
                       >
                         <Edit className="w-4 h-4" />
                       </Link>
                       <button
                         onClick={() => toggleProductStatus(product.id, product.is_active)}
-                        className="btn btn-secondary"
+                        className="btn btn-secondary flex items-center justify-center"
                         title={product.is_active ? 'Скрыть товар' : 'Показать товар'}
                       >
                         {product.is_active ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                       </button>
                       <button
                         onClick={() => deleteProduct(product.id)}
-                        className="btn btn-secondary text-red-400 hover:text-red-300"
+                        className="btn btn-secondary text-red-400 hover:text-red-300 flex items-center justify-center"
                         title="Удалить товар"
                       >
                         <Trash2 className="w-4 h-4" />

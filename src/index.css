@@ -186,30 +186,71 @@ input[type="radio"]:focus {
   transform: translateY(-2px);
 }
 
-/* Стили для иконок в карточках товаров */
-.card .flex.items-center.space-x-2.text-gray-500 button {
-  padding: 8px;
+/* Стили для кнопок в карточках товаров профиля */
+.card .flex.flex-col.sm\\:flex-row.gap-2 button,
+.card .flex.flex-col.sm\\:flex-row.gap-2 a {
+  padding: 8px 12px;
   border-radius: 6px;
   transition: all 0.3s ease;
   background: transparent;
-  border: none;
+  border: 1px solid #333333;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+  min-height: 36px;
+  white-space: nowrap;
+  text-decoration: none;
+  color: inherit;
 }
 
-.card .flex.items-center.space-x-2.text-gray-500 button:hover {
-  background: rgba(255, 255, 255, 0.1);
-  transform: scale(1.1);
+.card .flex.flex-col.sm\\:flex-row.gap-2 button:hover,
+.card .flex.flex-col.sm\\:flex-row.gap-2 a:hover {
+  background: rgba(0, 255, 136, 0.1);
+  border-color: #00ff88;
+  transform: translateY(-1px);
+  text-decoration: none;
 }
 
-.card .flex.items-center.space-x-2.text-gray-500 button:hover.text-red-400 {
-  color: #ff6b6b !important;
+.card .flex.flex-col.sm\\:flex-row.gap-2 button.text-red-400:hover,
+.card .flex.flex-col.sm\\:flex-row.gap-2 a.text-red-400:hover {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: #ef4444;
+  color: #ef4444 !important;
 }
 
-.card .flex.items-center.space-x-2.text-gray-500 button:hover.text-blue-400 {
-  color: #4dabf7 !important;
+.card .flex.flex-col.sm\\:flex-row.gap-2 button.text-blue-400:hover,
+.card .flex.flex-col.sm\\:flex-row.gap-2 a.text-blue-400:hover {
+  background: rgba(59, 130, 246, 0.1);
+  border-color: #3b82f6;
+  color: #3b82f6 !important;
+}
+
+/* Стили для кнопки просмотра */
+.card .flex.flex-col.sm\\:flex-row.gap-2 .flex-1 {
+  flex: 1;
+  min-width: 0;
+}
+
+.card .flex.flex-col.sm\\:flex-row.gap-2 .flex-1 span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Специальные стили для кнопок профиля */
+.card .flex.flex-col.sm\\:flex-row.gap-2 .btn-secondary {
+  background: transparent;
+  border: 1px solid #333333;
+  color: #ffffff;
+}
+
+.card .flex.flex-col.sm\\:flex-row.gap-2 .btn-secondary:hover {
+  background: rgba(0, 255, 136, 0.1);
+  border-color: #00ff88;
+  color: #ffffff;
 }
 
 /* Утилитарные классы */
@@ -1355,6 +1396,33 @@ input[type="radio"]:focus {
 
 .animate-spin {
   animation: spin 1s linear infinite;
+}
+
+/* Мобильные стили для кнопок профиля */
+@media (max-width: 768px) {
+  .card .flex.flex-col.sm\\:flex-row.gap-2 button,
+  .card .flex.flex-col.sm\\:flex-row.gap-2 a {
+    padding: 6px 8px;
+    font-size: 0.75rem;
+    min-height: 32px;
+  }
+  
+  .card .flex.flex-col.sm\\:flex-row.gap-2 .flex-1 {
+    font-size: 0.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .card .flex.flex-col.sm\\:flex-row.gap-2 button,
+  .card .flex.flex-col.sm\\:flex-row.gap-2 a {
+    padding: 4px 6px;
+    font-size: 0.625rem;
+    min-height: 28px;
+  }
+  
+  .card .flex.flex-col.sm\\:flex-row.gap-2 .flex-1 {
+    font-size: 0.625rem;
+  }
 }
 
 /* Скроллбар */
