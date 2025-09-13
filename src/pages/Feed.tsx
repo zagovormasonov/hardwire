@@ -211,8 +211,9 @@ const Feed: React.FC = () => {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {filteredProducts.map((product) => (
-            <div key={product.id} className="card group cursor-pointer">
-              <Link to={`/product/${product.id}`}>
+            <div key={product.id} className="card group">
+              {/* Изображение и основная информация */}
+              <Link to={`/product/${product.id}`} className="block">
                 {/* Изображение */}
                 <div className="aspect-square bg-gray-800 rounded-lg mb-4 overflow-hidden">
                   {product.images.length > 0 ? (
@@ -252,32 +253,31 @@ const Feed: React.FC = () => {
                       </button>
                     </div>
                   </div>
-
-                  {/* Продавец */}
-                  <div className="flex items-center space-x-2 pt-2 border-t border-gray-600">
-                    <div className="w-6 h-6 bg-gradient-to-r from-green-400 to-blue-400 rounded-full flex items-center justify-center overflow-hidden">
-                      {product.users?.avatar_url ? (
-                        <img 
-                          src={product.users.avatar_url} 
-                          alt={product.users.full_name}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <span className="text-black font-bold text-xs">
-                          {product.users?.full_name?.charAt(0).toUpperCase() || '?'}
-                        </span>
-                      )}
-                    </div>
-                    <Link 
-                      to={`/profile/${product.seller_id}`}
-                      className="text-sm text-gray-300 hover:text-green-400 transition-colors"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      {product.users?.full_name || 'Неизвестный'}
-                    </Link>
-                  </div>
                 </div>
               </Link>
+
+              {/* Продавец - отдельно от основной ссылки */}
+              <div className="flex items-center space-x-2 pt-2 border-t border-gray-600">
+                <div className="w-6 h-6 bg-gradient-to-r from-green-400 to-blue-400 rounded-full flex items-center justify-center overflow-hidden">
+                  {product.users?.avatar_url ? (
+                    <img 
+                      src={product.users.avatar_url} 
+                      alt={product.users.full_name}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <span className="text-black font-bold text-xs">
+                      {product.users?.full_name?.charAt(0).toUpperCase() || '?'}
+                    </span>
+                  )}
+                </div>
+                <Link 
+                  to={`/profile/${product.seller_id}`}
+                  className="text-sm text-gray-300 hover:text-green-400 transition-colors"
+                >
+                  {product.users?.full_name || 'Неизвестный'}
+                </Link>
+              </div>
             </div>
           ))}
         </div>

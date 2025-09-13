@@ -2,7 +2,6 @@ import React from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { Cpu, HardDrive, Monitor, Zap, ArrowRight, Star } from 'lucide-react'
-import SupabaseTest from '../components/SupabaseTest'
 
 const Home: React.FC = () => {
   const { user } = useAuth()
@@ -32,9 +31,6 @@ const Home: React.FC = () => {
 
   return (
     <div className="space-y-16">
-      {/* Тест подключения */}
-      <SupabaseTest />
-      
       {/* Hero секция */}
       <section className="text-center py-16">
         <div className="max-w-4xl mx-auto">
