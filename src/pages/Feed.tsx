@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { supabase, CATEGORIES } from '../lib/supabase'
-import { Search, Filter, SortAsc, SortDesc, Heart, MessageCircle, Eye } from 'lucide-react'
+import { Search, Filter, Heart, MessageCircle, Eye } from 'lucide-react'
 
 // Типы для товаров
 interface Product {

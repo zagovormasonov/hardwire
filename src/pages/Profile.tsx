@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../lib/supabase'
-import { User, Mail, Camera, Save, Edit3, Upload, Package, Eye, Heart, MessageCircle, Trash2, EyeOff, Plus, Edit } from 'lucide-react'
+import { Mail, Camera, Save, Edit3, Package, Eye, Trash2, EyeOff, Plus, Edit } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
 // Типы для товаров

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { supabase, CATEGORIES } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
-import { ArrowLeft, Upload, X, Save, Package } from 'lucide-react'
+import { ArrowLeft, Upload, X, Save } from 'lucide-react'
 
 // Типы для товаров
 interface Product {

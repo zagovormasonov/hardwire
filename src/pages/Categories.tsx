@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase, CATEGORIES } from '../lib/supabase'
-import { Bell, BellOff, Cpu, HardDrive, Monitor, Zap, Database, Wifi, Thermometer, Mouse, Headphones } from 'lucide-react'
+import { Bell, BellOff, Cpu, HardDrive, Monitor, Zap, Database, Thermometer, Mouse, Headphones } from 'lucide-react'
 
 // Типы для подписок
 interface Subscription {
