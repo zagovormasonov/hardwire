@@ -245,10 +245,16 @@ const Feed: React.FC = () => {
                       {formatPrice(product.price)}
                     </span>
                     <div className="flex items-center space-x-2 text-gray-500">
-                      <button className="p-1 hover:text-red-400 transition-colors">
+                      <button 
+                        className="p-2 rounded-lg hover:bg-red-500/20 hover:text-red-400 transition-all duration-300 flex items-center justify-center"
+                        title="Добавить в избранное"
+                      >
                         <Heart className="w-4 h-4" />
                       </button>
-                      <button className="p-1 hover:text-blue-400 transition-colors">
+                      <button 
+                        className="p-2 rounded-lg hover:bg-blue-500/20 hover:text-blue-400 transition-all duration-300 flex items-center justify-center"
+                        title="Написать продавцу"
+                      >
                         <MessageCircle className="w-4 h-4" />
                       </button>
                     </div>

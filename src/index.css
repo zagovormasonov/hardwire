@@ -64,6 +64,8 @@ body {
   color: #ffffff;
   transition: all 0.3s ease;
   width: 100%;
+  font-size: 16px;
+  line-height: 1.5;
 }
 
 .input:focus {
@@ -74,6 +76,28 @@ body {
 
 .input::placeholder {
   color: #888888;
+  opacity: 1;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+/* Стили для инпутов с иконками */
+.input.pl-10 {
+  padding-left: 40px;
+}
+
+.input.pl-12 {
+  padding-left: 48px;
+}
+
+/* Стили для поискового инпута */
+.search-field {
+  padding-left: 40px;
+}
+
+.search-field::placeholder {
+  color: #888888;
+  opacity: 1;
 }
 
 /* Стили для чекбоксов */
@@ -160,6 +184,32 @@ input[type="radio"]:focus {
   border-color: #00ff88;
   box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
   transform: translateY(-2px);
+}
+
+/* Стили для иконок в карточках товаров */
+.card .flex.items-center.space-x-2.text-gray-500 button {
+  padding: 8px;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+  background: transparent;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.card .flex.items-center.space-x-2.text-gray-500 button:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: scale(1.1);
+}
+
+.card .flex.items-center.space-x-2.text-gray-500 button:hover.text-red-400 {
+  color: #ff6b6b !important;
+}
+
+.card .flex.items-center.space-x-2.text-gray-500 button:hover.text-blue-400 {
+  color: #4dabf7 !important;
 }
 
 /* Утилитарные классы */
@@ -270,8 +320,28 @@ input[type="radio"]:focus {
   width: 100%;
   padding-left: 40px;
   padding-right: 16px;
-  padding-top: 8px;
-  padding-bottom: 8px;
+  padding-top: 12px;
+  padding-bottom: 12px;
+  font-size: 16px;
+  line-height: 1.5;
+  background: #111111;
+  border: 2px solid #333333;
+  border-radius: 8px;
+  color: #ffffff;
+  transition: all 0.3s ease;
+}
+
+.search-field:focus {
+  outline: none;
+  border-color: #00ff88;
+  box-shadow: 0 0 10px rgba(0, 255, 136, 0.3);
+}
+
+.search-field::placeholder {
+  color: #888888;
+  opacity: 1;
+  font-size: 16px;
+  line-height: 1.5;
 }
 
 .user-section {
@@ -1104,6 +1174,24 @@ input[type="radio"]:focus {
   .input {
     padding: 0.75rem;
     font-size: 0.875rem;
+    line-height: 1.5;
+  }
+  
+  .input::placeholder {
+    font-size: 0.875rem;
+    line-height: 1.5;
+  }
+  
+  .search-field {
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+    font-size: 0.875rem;
+    line-height: 1.5;
+  }
+  
+  .search-field::placeholder {
+    font-size: 0.875rem;
+    line-height: 1.5;
   }
   
   .main-content {
@@ -1168,6 +1256,24 @@ input[type="radio"]:focus {
   .input {
     padding: 0.5rem;
     font-size: 0.75rem;
+    line-height: 1.5;
+  }
+  
+  .input::placeholder {
+    font-size: 0.75rem;
+    line-height: 1.5;
+  }
+  
+  .search-field {
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+    font-size: 0.75rem;
+    line-height: 1.5;
+  }
+  
+  .search-field::placeholder {
+    font-size: 0.75rem;
+    line-height: 1.5;
   }
   
   .main-content {
