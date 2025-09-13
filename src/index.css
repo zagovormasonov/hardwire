@@ -1619,6 +1619,23 @@ input[type="radio"]:focus {
   align-items: center;
 }
 
+/* Стили для аватара в профиле */
+.profile-avatar {
+  transition: all 0.3s ease;
+}
+
+.profile-avatar:hover {
+  transform: scale(1.05);
+}
+
+.avatar-camera-icon {
+  transition: all 0.2s ease;
+}
+
+.avatar-camera-icon:hover {
+  transform: scale(1.1);
+}
+
 @media (max-width: 768px) {
   .profile-card {
     height: auto;

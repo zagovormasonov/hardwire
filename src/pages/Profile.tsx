@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { useNotifications } from '../contexts/NotificationContext'
 import { supabase } from '../lib/supabase'
-import { Mail, Save, Edit3, Package, Eye, Trash2, EyeOff, Plus, Edit, Heart } from 'lucide-react'
+import { Mail, Save, Edit3, Package, Eye, Trash2, EyeOff, Plus, Edit, Heart, Camera } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
 // Типы для товаров
@@ -352,7 +352,7 @@ const Profile: React.FC = () => {
           {/* Аватар */}
           <div className="relative">
             <div 
-              className="w-24 h-24 md:w-32 md:h-32 bg-gradient-to-r from-green-400 to-blue-400 rounded-full flex items-center justify-center overflow-hidden cursor-pointer hover:opacity-80 transition-opacity"
+              className="w-20 h-20 md:w-24 md:h-24 bg-gradient-to-r from-green-400 to-blue-400 rounded-full flex items-center justify-center overflow-hidden cursor-pointer hover:opacity-80 transition-opacity profile-avatar"
               onClick={() => {
                 if (isEditing) {
                   document.getElementById('avatar-upload')?.click()
@@ -366,11 +366,16 @@ const Profile: React.FC = () => {
                   className="w-full h-full object-cover"
                 />
               ) : (
-                <span className="text-black font-bold text-2xl md:text-4xl">
+                <span className="text-black font-bold text-xl md:text-2xl">
                   {user?.full_name?.charAt(0).toUpperCase() || '?'}
                 </span>
               )}
             </div>
+            {isEditing && (
+              <div className="absolute -bottom-1 -right-1 bg-green-400 text-black rounded-full p-1 cursor-pointer hover:bg-green-300 transition-colors avatar-camera-icon">
+                <Camera className="w-3 h-3" />
+              </div>
+            )}
             {isEditing && (
               <input
                 type="file"
