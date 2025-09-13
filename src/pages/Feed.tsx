@@ -338,10 +338,10 @@ const Feed: React.FC = () => {
                            <div className="flex items-center space-x-2 text-gray-500">
                              <button
                                onClick={() => toggleLike(product.id, product.is_liked || false)}
-                               className={`p-2 rounded-lg transition-all duration-300 flex items-center justify-center ${
+                               className={`p-2 transition-all duration-300 flex items-center justify-center ${
                                  product.is_liked 
-                                   ? 'text-red-400 bg-red-500/20' 
-                                   : 'hover:bg-red-500/20 hover:text-red-400'
+                                   ? 'text-red-400' 
+                                   : 'text-white hover:text-red-400'
                                }`}
                                title={product.is_liked ? 'Удалить из избранного' : 'Добавить в избранное'}
                              >
@@ -351,7 +351,7 @@ const Feed: React.FC = () => {
                                {product.likes_count || 0}
                              </span>
                              <button
-                               className="p-2 rounded-lg hover:bg-blue-500/20 hover:text-blue-400 transition-all duration-300 flex items-center justify-center"
+                               className="p-2 text-white hover:text-blue-400 transition-all duration-300 flex items-center justify-center"
                                title="Написать продавцу"
                              >
                                <MessageCircle className="w-4 h-4" />

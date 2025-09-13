@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { useNotifications } from '../contexts/NotificationContext'
 import { supabase } from '../lib/supabase'
-import { Mail, Camera, Save, Edit3, Package, Eye, Trash2, EyeOff, Plus, Edit, Heart } from 'lucide-react'
+import { Mail, Save, Edit3, Package, Eye, Trash2, EyeOff, Plus, Edit, Heart } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
 // Типы для товаров
@@ -347,11 +347,18 @@ const Profile: React.FC = () => {
       </div>
 
       {/* Карточка профиля */}
-      <div className="card max-w-2xl mx-auto">
+      <div className="card">
         <div className="flex flex-col md:flex-row items-center md:items-start space-y-6 md:space-y-0 md:space-x-8">
           {/* Аватар */}
           <div className="relative">
-            <div className="w-24 h-24 md:w-32 md:h-32 bg-gradient-to-r from-green-400 to-blue-400 rounded-full flex items-center justify-center overflow-hidden">
+            <div 
+              className="w-24 h-24 md:w-32 md:h-32 bg-gradient-to-r from-green-400 to-blue-400 rounded-full flex items-center justify-center overflow-hidden cursor-pointer hover:opacity-80 transition-opacity"
+              onClick={() => {
+                if (isEditing) {
+                  document.getElementById('avatar-upload')?.click()
+                }
+              }}
+            >
               {user?.avatar_url ? (
                 <img 
                   src={user.avatar_url} 
@@ -365,26 +372,14 @@ const Profile: React.FC = () => {
               )}
             </div>
             {isEditing && (
-              <div className="absolute bottom-0 right-0">
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleAvatarUpload}
-                  className="hidden"
-                  id="avatar-upload"
-                  disabled={uploadingAvatar}
-                />
-                <label
-                  htmlFor="avatar-upload"
-                  className="bg-green-400 text-black rounded-full p-1.5 md:p-2 hover:bg-blue-400 transition-colors cursor-pointer"
-                >
-                  {uploadingAvatar ? (
-                    <div className="animate-spin rounded-full h-3 w-3 md:h-4 md:w-4 border-b-2 border-black"></div>
-                  ) : (
-                    <Camera className="w-3 h-3 md:w-4 md:h-4" />
-                  )}
-                </label>
-              </div>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleAvatarUpload}
+                className="hidden"
+                id="avatar-upload"
+                disabled={uploadingAvatar}
+              />
             )}
           </div>
 
@@ -661,10 +656,10 @@ const Profile: React.FC = () => {
                     </span>
                     <button
                       onClick={() => removeFromFavorites(favorite.id)}
-                      className="p-2 rounded-lg hover:bg-red-500/20 hover:text-red-400 transition-all duration-300 flex items-center justify-center"
+                      className="p-2 text-red-400 hover:text-red-300 transition-all duration-300 flex items-center justify-center"
                       title="Удалить из избранного"
                     >
-                      <Heart className="w-4 h-4 fill-red-400" />
+                      <Heart className="w-4 h-4 fill-current" />
                     </button>
                   </div>
                 </div>
