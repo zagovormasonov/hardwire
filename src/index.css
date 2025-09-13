@@ -1425,6 +1425,105 @@ input[type="radio"]:focus {
   }
 }
 
+/* Стили для уведомлений */
+.notification-container {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.notification {
+  background: #1a1a1a;
+  border-left: 4px solid #00ff88;
+  border-radius: 8px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+  padding: 1rem;
+  min-width: 320px;
+  max-width: 400px;
+  transform: translateX(100%);
+  opacity: 0;
+  transition: all 0.3s ease;
+}
+
+.notification.show {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+.notification.success {
+  border-left-color: #00ff88;
+}
+
+.notification.error {
+  border-left-color: #ef4444;
+}
+
+.notification.warning {
+  border-left-color: #f59e0b;
+}
+
+.notification.info {
+  border-left-color: #3b82f6;
+}
+
+.notification-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.notification-icon {
+  flex-shrink: 0;
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.notification-text {
+  flex: 1;
+}
+
+.notification-title {
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 0.875rem;
+  margin: 0;
+}
+
+.notification-message {
+  color: #d1d5db;
+  font-size: 0.75rem;
+  margin: 0.25rem 0 0 0;
+}
+
+.notification-close {
+  flex-shrink: 0;
+  color: #9ca3af;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.notification-close:hover {
+  color: #ffffff;
+}
+
+/* Мобильные стили для уведомлений */
+@media (max-width: 768px) {
+  .notification-container {
+    top: 0.5rem;
+    right: 0.5rem;
+    left: 0.5rem;
+  }
+  
+  .notification {
+    min-width: auto;
+    max-width: none;
+  }
+}
+
 /* Скроллбар */
 ::-webkit-scrollbar {
   width: 8px;
