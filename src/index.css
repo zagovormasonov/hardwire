@@ -1606,6 +1606,32 @@ input[type="radio"]:focus {
   }
 }
 
+/* Стили для блока профиля */
+.profile-card {
+  height: 290px;
+  display: flex;
+  align-items: center;
+}
+
+.profile-content {
+  height: 100%;
+  display: flex;
+  align-items: center;
+}
+
+@media (max-width: 768px) {
+  .profile-card {
+    height: auto;
+    min-height: 290px;
+  }
+  
+  .profile-content {
+    flex-direction: column;
+    align-items: center;
+    padding: 1rem 0;
+  }
+}
+
 /* Скроллбар */
 ::-webkit-scrollbar {
   width: 8px;

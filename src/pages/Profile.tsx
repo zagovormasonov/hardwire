@@ -347,8 +347,8 @@ const Profile: React.FC = () => {
       </div>
 
       {/* Карточка профиля */}
-      <div className="card">
-        <div className="flex flex-col md:flex-row items-center md:items-start space-y-6 md:space-y-0 md:space-x-8">
+      <div className="card profile-card">
+        <div className="flex flex-col md:flex-row items-center md:items-start space-y-6 md:space-y-0 md:space-x-8 profile-content">
           {/* Аватар */}
           <div className="relative">
             <div 
