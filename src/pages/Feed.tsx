@@ -139,10 +139,10 @@ const Feed: React.FC = () => {
 
       {/* Поиск и фильтры */}
       <div className="card">
-        <div className="flex flex-col lg:flex-row gap-4">
+        <div className="space-y-4">
           {/* Поиск */}
-          <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-text-muted w-4 h-4" />
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
             <input
               type="text"
               placeholder="Поиск по названию или описанию..."
@@ -152,33 +152,33 @@ const Feed: React.FC = () => {
             />
           </div>
 
-          {/* Кнопка фильтров */}
-          <button
-            onClick={() => setShowFilters(!showFilters)}
-            className="btn btn-secondary flex items-center"
-          >
-            <Filter className="w-4 h-4 mr-2" />
-            Фильтры
-          </button>
-
-          {/* Сортировка */}
-          <select
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as any)}
-            className="input"
-          >
-            <option value="newest">Новые</option>
-            <option value="oldest">Старые</option>
-            <option value="price_asc">Цена ↑</option>
-            <option value="price_desc">Цена ↓</option>
-          </select>
+          {/* Сортировка и фильтры */}
+          <div className="flex flex-col sm:flex-row gap-4">
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as any)}
+              className="input flex-1"
+            >
+              <option value="newest">Новые</option>
+              <option value="oldest">Старые</option>
+              <option value="price_asc">Цена ↑</option>
+              <option value="price_desc">Цена ↓</option>
+            </select>
+            <button
+              onClick={() => setShowFilters(!showFilters)}
+              className="btn btn-secondary flex items-center justify-center"
+            >
+              <Filter className="w-4 h-4 mr-2" />
+              Фильтры
+            </button>
+          </div>
         </div>
 
         {/* Фильтры по категориям */}
         {showFilters && (
           <div className="mt-6 pt-6 border-t border-gray-600">
             <h3 className="text-lg font-semibold text-white mb-4">Категории</h3>
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-2">
               {CATEGORIES.map(category => (
                 <label key={category} className="flex items-center space-x-2 cursor-pointer">
                   <input

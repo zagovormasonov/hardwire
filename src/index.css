@@ -1025,33 +1025,26 @@ input[type="radio"]:focus {
   }
   
   .header-flex {
-    flex-direction: column;
-    gap: 0.75rem;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
   }
   
   .nav {
-    order: 2;
-    flex-wrap: wrap;
-    justify-content: center;
-  }
-  
-  .nav a {
-    padding: 0.5rem 0.75rem;
-    font-size: 0.875rem;
+    display: none;
   }
   
   .search-container {
-    order: 3;
-    width: 100%;
-  }
-  
-  .search-input {
-    width: 100%;
+    display: none;
   }
   
   .user-section {
-    order: 1;
-    align-self: flex-end;
+    order: 0;
+  }
+  
+  .logo {
+    order: -1;
   }
   
   .text-5xl {
@@ -1079,6 +1072,11 @@ input[type="radio"]:focus {
   }
   
   .grid-cols-2 {
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+  }
+  
+  /* Мобильные чекбоксы категорий */
+  .grid.grid-cols-2.md\\:grid-cols-5 {
     grid-template-columns: repeat(1, minmax(0, 1fr));
   }
   
@@ -1122,13 +1120,20 @@ input[type="radio"]:focus {
     padding: 0 0.25rem;
   }
   
+  .header-flex {
+    gap: 0.25rem;
+  }
+  
   .logo {
     font-size: 1.25rem;
   }
   
-  .nav a {
-    padding: 0.375rem 0.5rem;
-    font-size: 0.75rem;
+  .logo-text {
+    font-size: 1rem;
+  }
+  
+  .user-section {
+    font-size: 0.875rem;
   }
   
   .text-5xl {
