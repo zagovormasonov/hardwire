@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { supabase, CATEGORIES } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
+import { useNotifications } from '../contexts/NotificationContext'
 import { Search, Filter, Heart, MessageCircle, Eye } from 'lucide-react'
 
 // Типы для товаров
@@ -29,6 +30,7 @@ interface Product {
 const Feed: React.FC = () => {
   const [searchParams] = useSearchParams()
   const { user } = useAuth()
+  const { addNotification } = useNotifications()
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '')
@@ -127,7 +129,11 @@ const Feed: React.FC = () => {
 
   const toggleLike = async (productId: string, isLiked: boolean) => {
     if (!user) {
-      alert('Войдите в систему, чтобы добавлять товары в избранное')
+      addNotification({
+        type: 'warning',
+        title: 'Требуется авторизация',
+        message: 'Войдите в систему, чтобы добавлять товары в избранное'
+      })
       return
     }
 
@@ -148,6 +154,12 @@ const Feed: React.FC = () => {
             ? { ...p, is_liked: false, likes_count: (p.likes_count || 0) - 1 }
             : p
         ))
+
+        addNotification({
+          type: 'info',
+          title: 'Удалено из избранного',
+          message: 'Товар больше не в вашем списке избранного'
+        })
       } else {
         // Добавляем в избранное
         const { error } = await supabase
@@ -165,9 +177,20 @@ const Feed: React.FC = () => {
             ? { ...p, is_liked: true, likes_count: (p.likes_count || 0) + 1 }
             : p
         ))
+
+        addNotification({
+          type: 'success',
+          title: 'Добавлено в избранное',
+          message: 'Товар добавлен в ваш список избранного'
+        })
       }
     } catch (error) {
       console.error('Feed: Error toggling like:', error)
+      addNotification({
+        type: 'error',
+        title: 'Ошибка',
+        message: 'Не удалось обновить избранное. Попробуйте еще раз.'
+      })
     }
   }
 

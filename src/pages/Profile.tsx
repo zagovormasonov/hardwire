@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
+import { useNotifications } from '../contexts/NotificationContext'
 import { supabase } from '../lib/supabase'
 import { Mail, Camera, Save, Edit3, Package, Eye, Trash2, EyeOff, Plus, Edit, Heart } from 'lucide-react'
 import { Link } from 'react-router-dom'
@@ -39,10 +40,10 @@ interface UserStats {
 
 const Profile: React.FC = () => {
   const { user, updateProfile } = useAuth()
+  const { addNotification } = useNotifications()
   const [isEditing, setIsEditing] = useState(false)
   const [formData, setFormData] = useState({
-    full_name: user?.full_name || '',
-    avatar_url: user?.avatar_url || ''
+    full_name: user?.full_name || ''
   })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -148,8 +149,19 @@ const Profile: React.FC = () => {
 
       // Обновляем локальное состояние
       setFavorites(prev => prev.filter(fav => fav.id !== favoriteId))
+      
+      addNotification({
+        type: 'info',
+        title: 'Удалено из избранного',
+        message: 'Товар больше не в вашем списке избранного'
+      })
     } catch (error) {
       console.error('Profile: Error removing from favorites:', error)
+      addNotification({
+        type: 'error',
+        title: 'Ошибка',
+        message: 'Не удалось удалить товар из избранного'
+      })
     }
   }
 
@@ -164,6 +176,26 @@ const Profile: React.FC = () => {
     const file = e.target.files?.[0]
     if (!file || !user) return
 
+    // Проверяем размер файла (максимум 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      addNotification({
+        type: 'error',
+        title: 'Файл слишком большой',
+        message: 'Размер файла не должен превышать 5MB'
+      })
+      return
+    }
+
+    // Проверяем тип файла
+    if (!file.type.startsWith('image/')) {
+      addNotification({
+        type: 'error',
+        title: 'Неверный формат файла',
+        message: 'Выберите изображение (JPG, PNG, GIF)'
+      })
+      return
+    }
+
     setUploadingAvatar(true)
     try {
       const fileExt = file.name.split('.').pop()
@@ -172,7 +204,10 @@ const Profile: React.FC = () => {
 
       const { error: uploadError } = await supabase.storage
         .from('avatars')
-        .upload(filePath, file)
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: true
+        })
 
       if (uploadError) throw uploadError
 
@@ -180,15 +215,27 @@ const Profile: React.FC = () => {
         .from('avatars')
         .getPublicUrl(filePath)
 
-      setFormData({
-        ...formData,
+      // Обновляем профиль пользователя через updateProfile
+      await updateProfile({
         avatar_url: data.publicUrl
       })
-    } catch (error) {
+
+      addNotification({
+        type: 'success',
+        title: 'Аватар обновлен',
+        message: 'Ваш аватар успешно загружен'
+      })
+    } catch (error: any) {
       console.error('Profile: Avatar upload error:', error)
-      setError('Ошибка загрузки аватара')
+      addNotification({
+        type: 'error',
+        title: 'Ошибка загрузки',
+        message: error.message || 'Не удалось загрузить аватар'
+      })
     } finally {
       setUploadingAvatar(false)
+      // Очищаем input
+      e.target.value = ''
     }
   }
 
@@ -209,8 +256,7 @@ const Profile: React.FC = () => {
 
   const handleCancel = () => {
     setFormData({
-      full_name: user?.full_name || '',
-      avatar_url: user?.avatar_url || ''
+      full_name: user?.full_name || ''
     })
     setIsEditing(false)
     setError('')
@@ -306,15 +352,15 @@ const Profile: React.FC = () => {
           {/* Аватар */}
           <div className="relative">
             <div className="w-24 h-24 md:w-32 md:h-32 bg-gradient-to-r from-green-400 to-blue-400 rounded-full flex items-center justify-center overflow-hidden">
-              {formData.avatar_url ? (
+              {user?.avatar_url ? (
                 <img 
-                  src={formData.avatar_url} 
-                  alt={formData.full_name}
+                  src={user.avatar_url} 
+                  alt={user.full_name}
                   className="w-full h-full object-cover"
                 />
               ) : (
                 <span className="text-black font-bold text-2xl md:text-4xl">
-                  {formData.full_name.charAt(0).toUpperCase()}
+                  {user?.full_name?.charAt(0).toUpperCase() || '?'}
                 </span>
               )}
             </div>
@@ -377,23 +423,6 @@ const Profile: React.FC = () => {
                 </p>
               </div>
             </div>
-
-            {/* URL аватара */}
-            {isEditing && (
-              <div>
-                <label className="block text-sm font-medium text-white mb-2">
-                  URL аватара
-                </label>
-                <input
-                  type="url"
-                  name="avatar_url"
-                  value={formData.avatar_url}
-                  onChange={handleChange}
-                  className="input w-full"
-                  placeholder="https://example.com/avatar.jpg"
-                />
-              </div>
-            )}
 
             {/* Дата регистрации */}
             <div>
