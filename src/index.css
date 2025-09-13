@@ -1608,64 +1608,62 @@ input[type="radio"]:focus {
 
 /* Стили для блока профиля */
 .profile-card {
-  height: 290px !important;
-  display: flex !important;
-  align-items: center !important;
-  min-height: 290px !important;
-  max-height: 290px !important;
+  height: 290px;
+  display: flex;
+  align-items: center;
 }
 
 .profile-content {
-  height: 100% !important;
-  display: flex !important;
-  align-items: center !important;
+  height: 100%;
+  display: flex;
+  align-items: center;
 }
 
 /* Стили для аватара в профиле */
 .profile-avatar {
-  transition: all 0.3s ease !important;
-  width: 80px !important;
-  height: 80px !important;
+  transition: all 0.3s ease;
+  width: 80px;
+  height: 80px;
 }
 
 .profile-avatar:hover {
-  transform: scale(1.05) !important;
+  transform: scale(1.05);
 }
 
 @media (min-width: 768px) {
   .profile-avatar {
-    width: 96px !important;
-    height: 96px !important;
+    width: 96px;
+    height: 96px;
   }
 }
 
 .avatar-camera-icon {
-  transition: all 0.2s ease !important;
-  position: absolute !important;
-  bottom: -4px !important;
-  right: -4px !important;
-  background: #00ff88 !important;
-  color: #000000 !important;
-  border-radius: 50% !important;
-  padding: 4px !important;
-  cursor: pointer !important;
+  transition: all 0.2s ease;
+  position: absolute;
+  bottom: -4px;
+  right: -4px;
+  background: #00ff88;
+  color: #000000;
+  border-radius: 50%;
+  padding: 4px;
+  cursor: pointer;
 }
 
 .avatar-camera-icon:hover {
-  transform: scale(1.1) !important;
-  background: #00cc6a !important;
+  transform: scale(1.1);
+  background: #00cc6a;
 }
 
 @media (max-width: 768px) {
   .profile-card {
-    height: auto !important;
-    min-height: 290px !important;
+    height: auto;
+    min-height: 290px;
   }
   
   .profile-content {
-    flex-direction: column !important;
-    align-items: center !important;
-    padding: 1rem 0 !important;
+    flex-direction: column;
+    align-items: center;
+    padding: 1rem 0;
   }
 }
 

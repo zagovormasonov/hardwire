@@ -95,7 +95,6 @@ const Profile: React.FC = () => {
         total_views: 0 // Пока не реализовано
       })
     } catch (error) {
-      console.error('Profile: Error fetching products:', error)
     } finally {
       setProductsLoading(false)
     }
@@ -132,7 +131,6 @@ const Profile: React.FC = () => {
 
       setFavorites(data || [])
     } catch (error) {
-      console.error('Profile: Error fetching favorites:', error)
     } finally {
       setFavoritesLoading(false)
     }
@@ -156,7 +154,6 @@ const Profile: React.FC = () => {
         message: 'Товар больше не в вашем списке избранного'
       })
     } catch (error) {
-      console.error('Profile: Error removing from favorites:', error)
       addNotification({
         type: 'error',
         title: 'Ошибка',
@@ -226,7 +223,6 @@ const Profile: React.FC = () => {
         message: 'Ваш аватар успешно загружен'
       })
     } catch (error: any) {
-      console.error('Profile: Avatar upload error:', error)
       addNotification({
         type: 'error',
         title: 'Ошибка загрузки',
@@ -247,7 +243,6 @@ const Profile: React.FC = () => {
       await updateProfile(formData)
       setIsEditing(false)
     } catch (error: any) {
-      console.error('Profile: Update error:', error)
       setError(error.message || 'Ошибка обновления профиля')
     } finally {
       setLoading(false)
@@ -280,7 +275,6 @@ const Profile: React.FC = () => {
       const newActiveCount = isActive ? stats.active_products - 1 : stats.active_products + 1
       setStats({ ...stats, active_products: newActiveCount })
     } catch (error) {
-      console.error('Profile: Error toggling product status:', error)
       setError('Ошибка изменения статуса товара')
     }
   }
@@ -308,7 +302,6 @@ const Profile: React.FC = () => {
         total_views: stats.total_views
       })
     } catch (error) {
-      console.error('Profile: Error deleting product:', error)
       setError('Ошибка удаления товара')
     }
   }

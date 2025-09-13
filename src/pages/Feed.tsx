@@ -103,7 +103,6 @@ const Feed: React.FC = () => {
 
       setProducts(processedData)
     } catch (error) {
-      console.error('Feed: Error fetching products:', error)
     } finally {
       setLoading(false)
     }
@@ -185,7 +184,6 @@ const Feed: React.FC = () => {
         })
       }
     } catch (error) {
-      console.error('Feed: Error toggling like:', error)
       addNotification({
         type: 'error',
         title: 'Ошибка',
