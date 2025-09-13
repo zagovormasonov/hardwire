@@ -1570,92 +1570,39 @@ input[type="radio"]:focus {
   text-align: center;
 }
 
-.preloader-logo {
-  position: relative;
-  width: 80px;
-  height: 80px;
-  margin: 0 auto 2rem;
+.preloader-spinner {
+  margin-bottom: 2rem;
 }
 
-.preloader-logo-inner {
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(135deg, #00ff88 0%, #00d4ff 100%);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  animation: pulse 2s ease-in-out infinite;
-}
-
-.preloader-logo-inner span {
-  color: #000000;
-  font-weight: bold;
-  font-size: 2rem;
-}
-
-.preloader-ring {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  border: 4px solid transparent;
+.spinner-ring {
+  width: 60px;
+  height: 60px;
+  border: 4px solid #374151;
   border-top: 4px solid #00ff88;
   border-radius: 50%;
   animation: spin 1s linear infinite;
+  margin: 0 auto;
 }
 
 .preloader-text {
   margin-bottom: 1.5rem;
 }
 
-.preloader-title {
-  color: #ffffff;
-  font-size: 1.25rem;
-  font-weight: bold;
-  margin-bottom: 0.5rem;
-}
-
 .preloader-subtitle {
   color: #9ca3af;
   font-size: 0.875rem;
-}
-
-.preloader-progress {
-  width: 12rem;
-  height: 4px;
-  background: #374151;
-  border-radius: 2px;
-  overflow: hidden;
-  margin: 0 auto;
-}
-
-.preloader-progress-bar {
-  height: 100%;
-  background: linear-gradient(90deg, #00ff88 0%, #00d4ff 100%);
-  border-radius: 2px;
-  animation: shimmer 2s ease-in-out infinite;
+  margin: 0;
 }
 
 /* Мобильные стили для прелоадера */
 @media (max-width: 768px) {
-  .preloader-logo {
-    width: 60px;
-    height: 60px;
-    margin-bottom: 1.5rem;
+  .spinner-ring {
+    width: 50px;
+    height: 50px;
   }
   
-  .preloader-logo-inner span {
-    font-size: 1.5rem;
-  }
-  
-  .preloader-title {
-    font-size: 1.125rem;
-  }
-  
-  .preloader-progress {
-    width: 10rem;
+  .preloader-subtitle {
+    font-size: 0.8rem;
   }
 }
 
