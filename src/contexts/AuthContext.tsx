@@ -42,7 +42,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     console.log('Auth: Initializing auth context...')
     
     // Получаем текущую сессию
-    supabase.auth.getSession().then(({ data: { session }, error }) => {
+    supabase.auth.getSession().then(async ({ data: { session }, error }) => {
       if (!isMounted) return
       
       if (error) {
@@ -54,8 +54,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       console.log('Auth: Session retrieved:', session?.user?.id)
       setSession(session)
       if (session?.user) {
-        fetchUserProfile(session.user)
+        await fetchUserProfile(session.user)
       } else {
+        console.log('Auth: No user session, setting loading to false')
         setUser(null)
         setLoading(false)
       }
@@ -86,9 +87,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       isMounted = false
       subscription.unsubscribe()
     }
+    
+    // Дополнительная защита - таймаут на случай зависания
+    const safetyTimeout = setTimeout(() => {
+      if (isMounted) {
+        console.log('Auth: Safety timeout reached, forcing loading to false')
+        setLoading(false)
+      }
+    }, 5000) // 5 секунд максимум
+    
+    return () => {
+      isMounted = false
+      subscription.unsubscribe()
+      clearTimeout(safetyTimeout)
+    }
   }, [])
 
   const fetchUserProfile = async (supabaseUser: any) => {
+    console.log('Auth: fetchUserProfile called for user:', supabaseUser.id)
     try {
       console.log('Auth: Fetching profile for user:', supabaseUser.id)
       
@@ -127,6 +143,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       } else {
         console.log('Auth: User profile found:', data)
         setUser(data)
+        setLoading(false)
       }
     } catch (error) {
       console.error('Auth: Error in fetchUserProfile:', error)
