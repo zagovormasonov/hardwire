@@ -76,8 +76,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       console.log('Auth: Auth state changed:', event, session?.user?.id)
       setSession(session)
       if (session?.user) {
+        console.log('Auth: User found in session, calling fetchUserProfile')
         await fetchUserProfile(session.user)
       } else {
+        console.log('Auth: No user in session, setting user to null')
         setUser(null)
         setLoading(false)
       }
@@ -94,7 +96,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         console.log('Auth: Safety timeout reached, forcing loading to false')
         setLoading(false)
       }
-    }, 5000) // 5 секунд максимум
+    }, 3000) // Уменьшили до 3 секунд
     
     return () => {
       isMounted = false
@@ -105,14 +107,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const fetchUserProfile = async (supabaseUser: any) => {
     console.log('Auth: fetchUserProfile called for user:', supabaseUser.id)
+    
+    // Создаем таймаут для запроса
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Database request timeout')), 3000)
+    )
+    
     try {
       console.log('Auth: Fetching profile for user:', supabaseUser.id)
       
-      const { data, error } = await supabase
+      const queryPromise = supabase
         .from('users')
         .select('*')
         .eq('id', supabaseUser.id)
         .single()
+
+      // Используем Promise.race для таймаута
+      const { data, error } = await Promise.race([queryPromise, timeoutPromise]) as any
 
       if (error) {
         console.error('Auth: Error fetching user profile:', error)
@@ -137,6 +148,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           return
         } else {
           console.error('Auth: Unexpected error:', error)
+          // Fallback к локальному профилю
+          const fallbackUser = {
+            id: supabaseUser.id,
+            email: supabaseUser.email,
+            full_name: supabaseUser.user_metadata?.full_name || supabaseUser.email?.split('@')[0] || 'Пользователь',
+            avatar_url: undefined,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          }
+          console.log('Auth: Using fallback profile due to error')
+          setUser(fallbackUser)
           setLoading(false)
           return
         }
@@ -145,11 +167,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(data)
         setLoading(false)
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Auth: Error in fetchUserProfile:', error)
       
-      // В случае любой ошибки, создаем пользователя из данных Supabase Auth
-      console.log('Auth: Creating fallback user profile...')
+      // В случае любой ошибки (включая таймаут), создаем пользователя из данных Supabase Auth
+      console.log('Auth: Creating fallback user profile due to error/timeout...')
       const fallbackUser = {
         id: supabaseUser.id,
         email: supabaseUser.email,
@@ -159,8 +181,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         updated_at: new Date().toISOString()
       }
       
+      console.log('Auth: Using fallback profile:', fallbackUser)
       setUser(fallbackUser)
-    } finally {
       setLoading(false)
     }
   }
