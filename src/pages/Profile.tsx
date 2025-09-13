@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../lib/supabase'
-import { Mail, Camera, Save, Edit3, Package, Eye, Trash2, EyeOff, Plus, Edit } from 'lucide-react'
+import { Mail, Camera, Save, Edit3, Package, Eye, Trash2, EyeOff, Plus, Edit, Heart } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
 // Типы для товаров
@@ -18,6 +18,16 @@ interface Product {
   updated_at: string
   is_sold: boolean
   is_active: boolean
+  likes_count?: number
+}
+
+// Тип для избранных товаров
+interface Favorite {
+  id: string
+  product_id: string
+  user_id: string
+  created_at: string
+  products?: Product
 }
 
 interface UserStats {
@@ -40,6 +50,7 @@ const Profile: React.FC = () => {
   
   // Новые состояния для товаров и статистики
   const [products, setProducts] = useState<Product[]>([])
+  const [favorites, setFavorites] = useState<Favorite[]>([])
   const [stats, setStats] = useState<UserStats>({
     total_products: 0,
     active_products: 0,
@@ -47,10 +58,12 @@ const Profile: React.FC = () => {
     total_views: 0
   })
   const [productsLoading, setProductsLoading] = useState(true)
+  const [favoritesLoading, setFavoritesLoading] = useState(true)
 
   useEffect(() => {
     if (user) {
       fetchUserProducts()
+      fetchUserFavorites()
     }
   }, [user])
 
@@ -84,6 +97,59 @@ const Profile: React.FC = () => {
       console.error('Profile: Error fetching products:', error)
     } finally {
       setProductsLoading(false)
+    }
+  }
+
+  const fetchUserFavorites = async () => {
+    if (!user) return
+    
+    try {
+      setFavoritesLoading(true)
+      const { data, error } = await supabase
+        .from('favorites')
+        .select(`
+          *,
+          products (
+            id,
+            title,
+            description,
+            price,
+            category,
+            condition,
+            images,
+            seller_id,
+            created_at,
+            updated_at,
+            is_sold,
+            is_active
+          )
+        `)
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+
+      if (error) throw error
+
+      setFavorites(data || [])
+    } catch (error) {
+      console.error('Profile: Error fetching favorites:', error)
+    } finally {
+      setFavoritesLoading(false)
+    }
+  }
+
+  const removeFromFavorites = async (favoriteId: string) => {
+    try {
+      const { error } = await supabase
+        .from('favorites')
+        .delete()
+        .eq('id', favoriteId)
+
+      if (error) throw error
+
+      // Обновляем локальное состояние
+      setFavorites(prev => prev.filter(fav => fav.id !== favoriteId))
+    } catch (error) {
+      console.error('Profile: Error removing from favorites:', error)
     }
   }
 
@@ -473,9 +539,9 @@ const Profile: React.FC = () => {
                     <Link 
                       to={`/product/${product.id}`}
                       className="flex-1 btn btn-secondary text-center flex items-center justify-center"
+                      title="Просмотр товара"
                     >
-                      <Eye className="w-4 h-4 mr-2" />
-                      <span>Просмотр</span>
+                      <Eye className="w-4 h-4" />
                     </Link>
                     <div className="flex gap-2">
                       <Link 
@@ -502,6 +568,90 @@ const Profile: React.FC = () => {
                     </div>
                   </div>
                 </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Избранные товары */}
+      <div className="card">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-xl font-bold text-white">Избранное</h2>
+          <div className="text-sm text-gray-400">
+            {favorites.length} товаров
+          </div>
+        </div>
+
+        {favoritesLoading ? (
+          <div className="text-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-400 mx-auto"></div>
+            <p className="text-gray-400 mt-2">Загрузка избранного...</p>
+          </div>
+        ) : favorites.length === 0 ? (
+          <div className="text-center py-8">
+            <Package className="w-12 h-12 text-gray-600 mx-auto mb-4" />
+            <p className="text-gray-400">У вас пока нет избранных товаров</p>
+            <p className="text-gray-500 text-sm mt-2">
+              Нажмите на сердечко у товара, чтобы добавить его в избранное
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {favorites.map((favorite) => (
+              <div key={favorite.id} className="card group">
+                {/* Изображение */}
+                <div className="aspect-square bg-gray-800 rounded-lg mb-4 overflow-hidden">
+                  {favorite.products?.images && favorite.products.images.length > 0 ? (
+                    <img
+                      src={favorite.products.images[0]}
+                      alt={favorite.products.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <Package className="w-12 h-12 text-gray-600" />
+                    </div>
+                  )}
+                </div>
+
+                {/* Информация */}
+                <div className="space-y-3">
+                  <div>
+                    <h3 className="text-lg font-semibold text-white group-hover:text-green-400 transition-colors line-clamp-2">
+                      {favorite.products?.title || 'Товар удален'}
+                    </h3>
+                    <p className="text-sm text-gray-400">
+                      {favorite.products?.category} • {favorite.products?.condition === 'new' ? 'Новый' : favorite.products?.condition === 'used' ? 'Б/У' : 'Восстановленный'}
+                    </p>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <span className="text-xl font-bold text-green-400">
+                      {favorite.products?.price ? `${favorite.products.price.toLocaleString()} ₽` : 'Цена не указана'}
+                    </span>
+                    <button
+                      onClick={() => removeFromFavorites(favorite.id)}
+                      className="p-2 rounded-lg hover:bg-red-500/20 hover:text-red-400 transition-all duration-300 flex items-center justify-center"
+                      title="Удалить из избранного"
+                    >
+                      <Heart className="w-4 h-4 fill-red-400" />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Ссылка на товар */}
+                {favorite.products && (
+                  <div className="pt-2 border-t border-gray-600">
+                    <Link
+                      to={`/product/${favorite.products.id}`}
+                      className="btn btn-secondary w-full text-center"
+                    >
+                      <Eye className="w-4 h-4 mr-2" />
+                      Перейти к товару
+                    </Link>
+                  </div>
+                )}
               </div>
             ))}
           </div>
