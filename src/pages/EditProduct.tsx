@@ -259,7 +259,7 @@ const EditProduct: React.FC = () => {
         </div>
 
         {/* Цена и категория */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
           <div>
             <label className="block text-sm font-medium text-white mb-2">
               Цена (₽) *
@@ -356,20 +356,20 @@ const EditProduct: React.FC = () => {
 
           {/* Список изображений */}
           {images.length > 0 && (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4">
               {images.map((image, index) => (
                 <div key={index} className="relative group">
                   <img
                     src={image}
                     alt={`Изображение ${index + 1}`}
-                    className="w-full h-32 object-cover rounded-lg"
+                    className="w-full h-24 md:h-32 object-cover rounded-lg"
                   />
                   <button
                     type="button"
                     onClick={() => removeImage(index)}
-                    className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                    className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
                   >
-                    <X className="w-3 h-3" />
+                    <X className="w-2 h-2 md:w-3 md:h-3" />
                   </button>
                 </div>
               ))}
@@ -385,7 +385,7 @@ const EditProduct: React.FC = () => {
         )}
 
         {/* Кнопки */}
-        <div className="flex space-x-4">
+        <div className="flex flex-col sm:flex-row gap-4">
           <button
             type="submit"
             disabled={saving}

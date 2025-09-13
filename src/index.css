@@ -977,6 +977,223 @@ input[type="radio"]:focus {
   }
 }
 
+/* Мобильная адаптивность */
+@media (max-width: 1024px) {
+  .container {
+    padding: 0 1.5rem;
+  }
+  
+  .header-content {
+    padding: 0 1rem;
+  }
+  
+  .header-flex {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .nav {
+    order: 2;
+  }
+  
+  .search-container {
+    order: 3;
+    width: 100%;
+  }
+  
+  .user-section {
+    order: 1;
+    align-self: flex-end;
+  }
+  
+  .grid-cols-4 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  
+  .grid-cols-3 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 0 1rem;
+  }
+  
+  .header-content {
+    padding: 0 0.5rem;
+  }
+  
+  .header-flex {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  .nav {
+    order: 2;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  
+  .nav a {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+  }
+  
+  .search-container {
+    order: 3;
+    width: 100%;
+  }
+  
+  .search-input {
+    width: 100%;
+  }
+  
+  .user-section {
+    order: 1;
+    align-self: flex-end;
+  }
+  
+  .text-5xl {
+    font-size: 2.5rem;
+  }
+  
+  .text-4xl {
+    font-size: 2rem;
+  }
+  
+  .text-3xl {
+    font-size: 1.5rem;
+  }
+  
+  .text-2xl {
+    font-size: 1.25rem;
+  }
+  
+  .grid-cols-4 {
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+  }
+  
+  .grid-cols-3 {
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+  }
+  
+  .grid-cols-2 {
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+  }
+  
+  .space-x-4 > * + * {
+    margin-left: 0.5rem;
+  }
+  
+  .space-y-8 > * + * {
+    margin-top: 1.5rem;
+  }
+  
+  .space-y-6 > * + * {
+    margin-top: 1rem;
+  }
+  
+  .card {
+    padding: 1rem;
+  }
+  
+  .btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+  }
+  
+  .input {
+    padding: 0.75rem;
+    font-size: 0.875rem;
+  }
+  
+  .main-content {
+    padding: 1rem 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 0 0.5rem;
+  }
+  
+  .header-content {
+    padding: 0 0.25rem;
+  }
+  
+  .logo {
+    font-size: 1.25rem;
+  }
+  
+  .nav a {
+    padding: 0.375rem 0.5rem;
+    font-size: 0.75rem;
+  }
+  
+  .text-5xl {
+    font-size: 2rem;
+  }
+  
+  .text-4xl {
+    font-size: 1.75rem;
+  }
+  
+  .text-3xl {
+    font-size: 1.25rem;
+  }
+  
+  .text-2xl {
+    font-size: 1.125rem;
+  }
+  
+  .text-xl {
+    font-size: 1rem;
+  }
+  
+  .card {
+    padding: 0.75rem;
+  }
+  
+  .btn {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.75rem;
+  }
+  
+  .input {
+    padding: 0.5rem;
+    font-size: 0.75rem;
+  }
+  
+  .main-content {
+    padding: 0.5rem 0;
+  }
+  
+  .space-y-16 > * + * {
+    margin-top: 2rem;
+  }
+  
+  .space-y-8 > * + * {
+    margin-top: 1rem;
+  }
+  
+  .space-y-6 > * + * {
+    margin-top: 0.75rem;
+  }
+  
+  .space-y-4 > * + * {
+    margin-top: 0.5rem;
+  }
+  
+  .space-y-3 > * + * {
+    margin-top: 0.375rem;
+  }
+  
+  .space-y-2 > * + * {
+    margin-top: 0.25rem;
+  }
+}
+
 /* Адаптивность */
 @media (min-width: 768px) {
   .nav {

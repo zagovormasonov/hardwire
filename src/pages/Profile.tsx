@@ -239,7 +239,7 @@ const Profile: React.FC = () => {
         <div className="flex flex-col md:flex-row items-center md:items-start space-y-6 md:space-y-0 md:space-x-8">
           {/* Аватар */}
           <div className="relative">
-            <div className="w-32 h-32 bg-gradient-to-r from-green-400 to-blue-400 rounded-full flex items-center justify-center overflow-hidden">
+            <div className="w-24 h-24 md:w-32 md:h-32 bg-gradient-to-r from-green-400 to-blue-400 rounded-full flex items-center justify-center overflow-hidden">
               {formData.avatar_url ? (
                 <img 
                   src={formData.avatar_url} 
@@ -247,7 +247,7 @@ const Profile: React.FC = () => {
                   className="w-full h-full object-cover"
                 />
               ) : (
-                <span className="text-black font-bold text-4xl">
+                <span className="text-black font-bold text-2xl md:text-4xl">
                   {formData.full_name.charAt(0).toUpperCase()}
                 </span>
               )}
@@ -264,12 +264,12 @@ const Profile: React.FC = () => {
                 />
                 <label
                   htmlFor="avatar-upload"
-                  className="bg-green-400 text-black rounded-full p-2 hover:bg-blue-400 transition-colors cursor-pointer"
+                  className="bg-green-400 text-black rounded-full p-1.5 md:p-2 hover:bg-blue-400 transition-colors cursor-pointer"
                 >
                   {uploadingAvatar ? (
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-black"></div>
+                    <div className="animate-spin rounded-full h-3 w-3 md:h-4 md:w-4 border-b-2 border-black"></div>
                   ) : (
-                    <Camera className="w-4 h-4" />
+                    <Camera className="w-3 h-3 md:w-4 md:h-4" />
                   )}
                 </label>
               </div>
@@ -380,22 +380,22 @@ const Profile: React.FC = () => {
       </div>
 
       {/* Статистика */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
         <div className="card text-center">
-          <div className="text-2xl font-bold text-green-400 mb-2">{stats.total_products}</div>
-          <div className="text-gray-400">Всего товаров</div>
+          <div className="text-xl md:text-2xl font-bold text-green-400 mb-2">{stats.total_products}</div>
+          <div className="text-gray-400 text-sm md:text-base">Всего товаров</div>
         </div>
         <div className="card text-center">
-          <div className="text-2xl font-bold text-blue-400 mb-2">{stats.active_products}</div>
-          <div className="text-gray-400">Активных</div>
+          <div className="text-xl md:text-2xl font-bold text-blue-400 mb-2">{stats.active_products}</div>
+          <div className="text-gray-400 text-sm md:text-base">Активных</div>
         </div>
         <div className="card text-center">
-          <div className="text-2xl font-bold text-purple-400 mb-2">{stats.sold_products}</div>
-          <div className="text-gray-400">Проданных</div>
+          <div className="text-xl md:text-2xl font-bold text-purple-400 mb-2">{stats.sold_products}</div>
+          <div className="text-gray-400 text-sm md:text-base">Проданных</div>
         </div>
         <div className="card text-center">
-          <div className="text-2xl font-bold text-yellow-400 mb-2">{stats.total_views}</div>
-          <div className="text-gray-400">Просмотров</div>
+          <div className="text-xl md:text-2xl font-bold text-yellow-400 mb-2">{stats.total_views}</div>
+          <div className="text-gray-400 text-sm md:text-base">Просмотров</div>
         </div>
       </div>
 
@@ -469,7 +469,7 @@ const Profile: React.FC = () => {
                   </div>
 
                   {/* Действия */}
-                  <div className="flex space-x-2 pt-2 border-t border-gray-600">
+                  <div className="flex flex-col sm:flex-row gap-2 pt-2 border-t border-gray-600">
                     <Link 
                       to={`/product/${product.id}`}
                       className="flex-1 btn btn-secondary text-center"
@@ -477,27 +477,29 @@ const Profile: React.FC = () => {
                       <Eye className="w-4 h-4 mr-1" />
                       Просмотр
                     </Link>
-                    <Link 
-                      to={`/edit/${product.id}`}
-                      className="btn btn-secondary text-blue-400 hover:text-blue-300"
-                      title="Редактировать товар"
-                    >
-                      <Edit className="w-4 h-4" />
-                    </Link>
-                    <button
-                      onClick={() => toggleProductStatus(product.id, product.is_active)}
-                      className="btn btn-secondary"
-                      title={product.is_active ? 'Скрыть товар' : 'Показать товар'}
-                    >
-                      {product.is_active ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                    </button>
-                    <button
-                      onClick={() => deleteProduct(product.id)}
-                      className="btn btn-secondary text-red-400 hover:text-red-300"
-                      title="Удалить товар"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                    <div className="flex gap-2">
+                      <Link 
+                        to={`/edit/${product.id}`}
+                        className="btn btn-secondary text-blue-400 hover:text-blue-300"
+                        title="Редактировать товар"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </Link>
+                      <button
+                        onClick={() => toggleProductStatus(product.id, product.is_active)}
+                        className="btn btn-secondary"
+                        title={product.is_active ? 'Скрыть товар' : 'Показать товар'}
+                      >
+                        {product.is_active ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                      <button
+                        onClick={() => deleteProduct(product.id)}
+                        className="btn btn-secondary text-red-400 hover:text-red-300"
+                        title="Удалить товар"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>

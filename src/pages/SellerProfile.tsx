@@ -125,7 +125,7 @@ const SellerProfile: React.FC = () => {
       <div className="card max-w-2xl mx-auto">
         <div className="flex flex-col md:flex-row items-center md:items-start space-y-6 md:space-y-0 md:space-x-8">
           {/* Аватар */}
-          <div className="w-32 h-32 bg-gradient-to-r from-green-400 to-blue-400 rounded-full flex items-center justify-center overflow-hidden">
+          <div className="w-24 h-24 md:w-32 md:h-32 bg-gradient-to-r from-green-400 to-blue-400 rounded-full flex items-center justify-center overflow-hidden">
             {seller.avatar_url ? (
               <img 
                 src={seller.avatar_url} 
@@ -133,7 +133,7 @@ const SellerProfile: React.FC = () => {
                 className="w-full h-full object-cover"
               />
             ) : (
-              <span className="text-black font-bold text-4xl">
+              <span className="text-black font-bold text-2xl md:text-4xl">
                 {seller.full_name.charAt(0).toUpperCase()}
               </span>
             )}
@@ -142,7 +142,7 @@ const SellerProfile: React.FC = () => {
           {/* Информация */}
           <div className="flex-1 space-y-4">
             <div>
-              <h1 className="text-3xl font-bold text-white mb-2">
+              <h1 className="text-2xl md:text-3xl font-bold text-white mb-2">
                 {seller.full_name}
               </h1>
               <p className="text-gray-400">
@@ -152,12 +152,12 @@ const SellerProfile: React.FC = () => {
 
             <div className="grid grid-cols-2 gap-4">
               <div className="text-center">
-                <div className="text-2xl font-bold text-green-400">{products.length}</div>
-                <div className="text-gray-400">Товаров на продажу</div>
+                <div className="text-xl md:text-2xl font-bold text-green-400">{products.length}</div>
+                <div className="text-gray-400 text-sm md:text-base">Товаров на продажу</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-blue-400">0</div>
-                <div className="text-gray-400">Проданных</div>
+                <div className="text-xl md:text-2xl font-bold text-blue-400">0</div>
+                <div className="text-gray-400 text-sm md:text-base">Проданных</div>
               </div>
             </div>
           </div>
