@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { Modal, Input, Button, Avatar, Typography, Space, Divider, message, Spin } from 'antd'
-import { SendOutlined, UserOutlined } from '@ant-design/icons'
+import { SendOutlined, UserOutlined, MessageOutlined } from '@ant-design/icons'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 
@@ -23,14 +23,16 @@ interface ChatSimpleProps {
   sellerAvatar?: string
   productTitle?: string
   onClose?: () => void
+  isModal?: boolean
 }
 
 const ChatSimple: React.FC<ChatSimpleProps> = ({ 
   sellerId, 
   sellerName, 
   sellerAvatar, 
-  productTitle,
-  onClose 
+  productTitle, 
+  onClose,
+  isModal = true
 }) => {
   const { user } = useAuth()
   const [messages, setMessages] = useState<Message[]>([])
@@ -288,6 +290,161 @@ const ChatSimple: React.FC<ChatSimpleProps> = ({
           <Spin size="large" />
         </div>
       </Modal>
+    )
+  }
+
+  // Если не модальное окно, возвращаем обычный компонент
+  if (!isModal) {
+    return (
+      <div style={{
+        background: '#1a1a1a',
+        border: '1px solid #374151',
+        borderRadius: '12px',
+        height: '600px',
+        display: 'flex',
+        flexDirection: 'column'
+      }}>
+        {/* Заголовок */}
+        <div style={{
+          background: '#1a1a1a',
+          borderBottom: '1px solid #374151',
+          padding: '16px 24px',
+          flexShrink: 0
+        }}>
+          <Space>
+            <Avatar src={sellerAvatar} icon={<UserOutlined />} />
+            <div>
+              <Title level={5} style={{ margin: 0, color: '#ffffff' }}>
+                {sellerName}
+                <span style={{ color: '#00ff88', marginLeft: '8px' }}>●</span>
+              </Title>
+              {productTitle && (
+                <Text type="secondary" style={{ fontSize: '12px' }}>
+                  по товару "{productTitle}"
+                </Text>
+              )}
+            </div>
+          </Space>
+        </div>
+
+        {/* Область сообщений */}
+        <div 
+          style={{ 
+            flex: 1,
+            overflowY: 'auto', 
+            padding: '16px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '12px'
+          }}
+        >
+          {messages.length === 0 ? (
+            <div style={{ 
+              textAlign: 'center', 
+              color: '#9ca3af',
+              marginTop: '50px'
+            }}>
+              <MessageOutlined style={{ fontSize: '48px', marginBottom: '16px' }} />
+              <div>Начните диалог с {sellerName}</div>
+            </div>
+          ) : (
+            messages.map((msg) => {
+              const isOwn = msg.sender_id === user?.id
+              return (
+                <div
+                  key={msg.id}
+                  style={{
+                    display: 'flex',
+                    justifyContent: isOwn ? 'flex-end' : 'flex-start',
+                    marginBottom: '8px'
+                  }}
+                >
+                  <div
+                    style={{
+                      maxWidth: '70%',
+                      background: isOwn ? '#00ff88' : '#2a2a2a',
+                      color: isOwn ? '#000000' : '#ffffff',
+                      padding: '12px 16px',
+                      borderRadius: '12px',
+                      borderTopLeftRadius: isOwn ? '12px' : '4px',
+                      borderTopRightRadius: isOwn ? '4px' : '12px'
+                    }}
+                  >
+                    <div style={{ marginBottom: '4px' }}>
+                      {!isOwn && (
+                        <Text 
+                          style={{ 
+                            fontSize: '12px', 
+                            color: '#9ca3af',
+                            fontWeight: 'bold'
+                          }}
+                        >
+                          {msg.sender_name}
+                        </Text>
+                      )}
+                    </div>
+                    <div style={{ marginBottom: '4px' }}>
+                      {msg.message_text}
+                    </div>
+                    <div style={{ 
+                      fontSize: '10px', 
+                      opacity: 0.7,
+                      textAlign: 'right'
+                    }}>
+                      {formatTime(msg.created_at)}
+                    </div>
+                  </div>
+                </div>
+              )
+            })
+          )}
+          <div ref={messagesEndRef} />
+        </div>
+
+        <Divider style={{ margin: 0, borderColor: '#374151' }} />
+
+        {/* Поле ввода */}
+        <div style={{ 
+          padding: '16px', 
+          borderTop: '1px solid #374151',
+          background: '#1a1a1a',
+          flexShrink: 0
+        }}>
+          <Space.Compact style={{ width: '100%' }}>
+            <TextArea
+              value={newMessage}
+              onChange={(e) => setNewMessage(e.target.value)}
+              onKeyPress={handleKeyPress}
+              placeholder="Введите сообщение..."
+              rows={2}
+              maxLength={500}
+              style={{
+                background: '#2a2a2a',
+                border: '1px solid #374151',
+                borderRadius: '8px',
+                color: '#ffffff',
+                resize: 'none'
+              }}
+            />
+            <Button
+              type="primary"
+              onClick={handleSendMessage}
+              loading={sending}
+              disabled={!newMessage.trim()}
+              style={{
+                background: '#00ff88',
+                border: 'none',
+                color: '#000000',
+                fontWeight: 'bold',
+                height: 'auto',
+                borderRadius: '0 8px 8px 0'
+              }}
+            >
+              Отправить
+            </Button>
+          </Space.Compact>
+        </div>
+      </div>
     )
   }
 

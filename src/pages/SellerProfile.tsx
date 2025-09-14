@@ -19,9 +19,11 @@ import {
   InboxOutlined, 
   EyeOutlined,
   UserOutlined,
-  CalendarOutlined
+  CalendarOutlined,
+  MessageOutlined
 } from '@ant-design/icons'
 import { supabase } from '../lib/supabase'
+import ChatSimple from '../components/ChatSimple'
 
 const { Title, Text } = Typography
 
@@ -57,6 +59,7 @@ const SellerProfile: React.FC = () => {
   const [seller, setSeller] = useState<User | null>(null)
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
+  const [chatVisible, setChatVisible] = useState(false)
 
   useEffect(() => {
     if (id) {
@@ -202,7 +205,8 @@ const SellerProfile: React.FC = () => {
                 <Space>
                   <Button
                     type="primary"
-                    icon={<EyeOutlined />}
+                    icon={<MessageOutlined />}
+                    onClick={() => setChatVisible(true)}
                     style={{
                       background: '#00ff88',
                       borderColor: '#00ff88',
@@ -412,6 +416,16 @@ const SellerProfile: React.FC = () => {
           </Row>
         )}
       </Card>
+      
+      {/* Модальное окно чата */}
+      {chatVisible && seller && (
+        <ChatSimple
+          sellerId={seller.id}
+          sellerName={seller.full_name || seller.email?.split('@')[0] || 'Продавец'}
+          sellerAvatar={seller.avatar_url}
+          onClose={() => setChatVisible(false)}
+        />
+      )}
     </div>
   )
 }
