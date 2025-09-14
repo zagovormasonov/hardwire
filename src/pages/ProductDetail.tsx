@@ -25,6 +25,7 @@ import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import { useNotifications } from '../contexts/NotificationContext'
 import ChatModal from '../components/ChatModal'
+import ChatWebSocket from '../components/ChatWebSocket'
 
 const { Title, Text, Paragraph } = Typography
 
@@ -57,6 +58,7 @@ const ProductDetail: React.FC = () => {
   const [loading, setLoading] = useState(true)
   const [isLiked, setIsLiked] = useState(false)
   const [chatModalVisible, setChatModalVisible] = useState(false)
+  const [useWebSocketChat] = useState(true) // Используем WebSocket чат по умолчанию
 
   useEffect(() => {
     if (id) {
@@ -409,14 +411,24 @@ const ProductDetail: React.FC = () => {
       </Row>
       
       {/* Модальное окно чата */}
-      <ChatModal
-        visible={chatModalVisible}
-        onClose={() => setChatModalVisible(false)}
-        sellerId={product?.seller_id}
-        sellerName={product?.users?.full_name || 'Продавец'}
-        sellerAvatar={product?.users?.avatar_url}
-        productTitle={product?.title}
-      />
+      {useWebSocketChat ? (
+        <ChatWebSocket
+          sellerId={product?.seller_id || ''}
+          sellerName={product?.users?.full_name || 'Продавец'}
+          sellerAvatar={product?.users?.avatar_url}
+          productTitle={product?.title}
+          onClose={() => setChatModalVisible(false)}
+        />
+      ) : (
+        <ChatModal
+          visible={chatModalVisible}
+          onClose={() => setChatModalVisible(false)}
+          sellerId={product?.seller_id}
+          sellerName={product?.users?.full_name || 'Продавец'}
+          sellerAvatar={product?.users?.avatar_url}
+          productTitle={product?.title}
+        />
+      )}
     </div>
   )
 }
