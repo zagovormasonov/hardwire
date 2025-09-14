@@ -17,6 +17,7 @@ const Register: React.FC = () => {
       console.log('Register: Начинаем регистрацию пользователя:', values.email)
       
       const result = await signUp(values.email, values.password, values.fullName)
+      console.log('Register: Результат регистрации:', result)
       
       if (result?.needsEmailConfirmation) {
         console.log('Register: Пользователь создан, показываем сообщение о подтверждении email')
@@ -27,8 +28,11 @@ const Register: React.FC = () => {
           10
         )
         
+        console.log('Register: Сообщение показано, перенаправляем через 3 секунды')
+        
         // Перенаправляем на страницу входа
         setTimeout(() => {
+          console.log('Register: Перенаправляем на страницу входа')
           navigate('/login')
         }, 3000)
       } else {
@@ -74,17 +78,6 @@ const Register: React.FC = () => {
           <Text style={{ color: '#9ca3af' }}>
             Создайте свой аккаунт
           </Text>
-          <div style={{ 
-            marginTop: '12px', 
-            padding: '12px', 
-            background: '#2a2a2a', 
-            borderRadius: '8px',
-            border: '1px solid #374151'
-          }}>
-            <Text style={{ color: '#9ca3af', fontSize: '12px' }}>
-              📧 После регистрации вам будет отправлено письмо для подтверждения email
-            </Text>
-          </div>
         </div>
 
         <Form
