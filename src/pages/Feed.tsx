@@ -420,6 +420,11 @@ const Feed: React.FC = () => {
                       }}
                       style={{
                         color: product.is_liked ? '#ff4757' : '#ffffff',
+                        width: '100%',
+                        height: '100%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
                       }}
                     />
                     <Text style={{ color: '#9ca3af', fontSize: '12px' }}>
@@ -429,7 +434,14 @@ const Feed: React.FC = () => {
                       type="text"
                       icon={<MessageOutlined />}
                       onClick={(e) => e.stopPropagation()}
-                      style={{ color: '#ffffff' }}
+                      style={{ 
+                        color: '#ffffff',
+                        width: '100%',
+                        height: '100%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
                     />
                   </Space>
                 </div>
@@ -442,10 +454,21 @@ const Feed: React.FC = () => {
                   alignItems: 'center' 
                 }}>
                   <Space 
-                    style={{ cursor: 'pointer' }}
+                    style={{ 
+                      cursor: 'pointer',
+                      padding: '8px',
+                      borderRadius: '8px',
+                      transition: 'background-color 0.2s ease',
+                    }}
                     onClick={(e) => {
                       e.stopPropagation()
                       navigate(`/profile/${product.seller_id}`)
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = '#2a2a2a'
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = 'transparent'
                     }}
                   >
                     <Avatar 

@@ -340,6 +340,9 @@ const ProductDetail: React.FC = () => {
                   borderColor: '#00ff88',
                   color: '#000',
                   flex: 1,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
                 }}
               >
                 Написать продавцу
@@ -353,6 +356,9 @@ const ProductDetail: React.FC = () => {
                   background: isLiked ? '#ff4757' : 'transparent',
                   borderColor: isLiked ? '#ff4757' : '#374151',
                   color: isLiked ? '#ffffff' : '#ffffff',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
                 }}
               >
                 {isLiked ? 'В избранном' : 'В избранное'}
@@ -365,6 +371,9 @@ const ProductDetail: React.FC = () => {
                   background: 'transparent',
                   borderColor: '#374151',
                   color: '#ffffff',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
                 }}
               >
                 Поделиться

@@ -398,6 +398,9 @@ const SellerProfile: React.FC = () => {
                         background: '#00ff88',
                         borderColor: '#00ff88',
                         color: '#000',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
                       }}
                     >
                       Смотреть

@@ -658,7 +658,12 @@ const Profile: React.FC = () => {
                         type="text"
                         icon={<EyeOutlined />}
                         size="small"
-                        style={{ color: '#ffffff' }}
+                        style={{ 
+                          color: '#ffffff',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                        }}
                       >
                         <Link to={`/product/${product.id}`}>Просмотр</Link>
                       </Button>
@@ -666,7 +671,12 @@ const Profile: React.FC = () => {
                         type="text"
                         icon={<EditOutlined />}
                         size="small"
-                        style={{ color: '#00ff88' }}
+                        style={{ 
+                          color: '#00ff88',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                        }}
                       >
                         <Link to={`/edit/${product.id}`}>Редактировать</Link>
                       </Button>
@@ -677,14 +687,24 @@ const Profile: React.FC = () => {
                         type="text"
                         icon={product.is_active ? <EyeInvisibleOutlined /> : <EyeOutlined />}
                         size="small"
-                        style={{ color: '#ffffff' }}
+                        style={{ 
+                          color: '#ffffff',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                        }}
                         onClick={() => toggleProductStatus(product.id, product.is_active)}
                       />
                       <Button
                         type="text"
                         icon={<DeleteOutlined />}
                         size="small"
-                        style={{ color: '#ff4757' }}
+                        style={{ 
+                          color: '#ff4757',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                        }}
                         onClick={() => deleteProduct(product.id)}
                       />
                     </Space>
@@ -781,7 +801,12 @@ const Profile: React.FC = () => {
                       type="text"
                       icon={<HeartOutlined />}
                       size="small"
-                      style={{ color: '#ff4757' }}
+                      style={{ 
+                        color: '#ff4757',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
                       onClick={() => removeFromFavorites(favorite.id)}
                     />
                     
@@ -794,6 +819,9 @@ const Profile: React.FC = () => {
                           background: '#00ff88',
                           borderColor: '#00ff88',
                           color: '#000',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
                         }}
                       >
                         <Link to={`/product/${favorite.products.id}`} style={{ color: '#000' }}>
