@@ -24,7 +24,7 @@ import {
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import { useNotifications } from '../contexts/NotificationContext'
-import MessageModal from '../components/MessageModal'
+import ChatModal from '../components/ChatModal'
 
 const { Title, Text, Paragraph } = Typography
 
@@ -56,7 +56,7 @@ const ProductDetail: React.FC = () => {
   const [product, setProduct] = useState<Product | null>(null)
   const [loading, setLoading] = useState(true)
   const [isLiked, setIsLiked] = useState(false)
-  const [messageModalVisible, setMessageModalVisible] = useState(false)
+  const [chatModalVisible, setChatModalVisible] = useState(false)
 
   useEffect(() => {
     if (id) {
@@ -348,8 +348,8 @@ const ProductDetail: React.FC = () => {
                     return
                   }
                   
-                  console.log('ProductDetail: Открываем модальное окно сообщений')
-                  setMessageModalVisible(true)
+                  console.log('ProductDetail: Открываем модальное окно чата')
+                  setChatModalVisible(true)
                 }}
                 style={{
                   background: '#00ff88',
@@ -408,18 +408,15 @@ const ProductDetail: React.FC = () => {
         </Col>
       </Row>
       
-      {/* Модальное окно для отправки сообщения */}
-      {product && user && (
-        <MessageModal
-          visible={messageModalVisible}
-          onClose={() => setMessageModalVisible(false)}
-          sellerId={product.seller_id}
-          sellerName={product.users?.full_name || 'Продавец'}
-          productTitle={product.title}
-          buyerId={user.id}
-          buyerName={user.full_name}
-        />
-      )}
+      {/* Модальное окно чата */}
+      <ChatModal
+        visible={chatModalVisible}
+        onClose={() => setChatModalVisible(false)}
+        sellerId={product?.seller_id}
+        sellerName={product?.users?.full_name || 'Продавец'}
+        sellerAvatar={product?.users?.avatar_url}
+        productTitle={product?.title}
+      />
     </div>
   )
 }

@@ -15,6 +15,7 @@ import Categories from './pages/Categories'
 import ProductDetail from './pages/ProductDetail'
 import EditProduct from './pages/EditProduct'
 import SellerProfile from './pages/SellerProfile'
+import Messages from './pages/Messages'
 
 function App() {
   return (
@@ -34,6 +35,7 @@ function App() {
                 <Route path="/product/:id" element={<Layout><ProductDetail /></Layout>} />
                 <Route path="/edit/:id" element={<Layout><EditProduct /></Layout>} />
                 <Route path="/profile/:id" element={<Layout><SellerProfile /></Layout>} />
+                <Route path="/messages" element={<Layout><Messages /></Layout>} />
               </Routes>
             </NotificationProvider>
           </SearchProvider>

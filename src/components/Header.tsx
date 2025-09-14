@@ -67,10 +67,16 @@ const Header: React.FC = () => {
       key: 'categories',
       label: <Link to="/categories">Категории</Link>,
     },
-    ...(user ? [{
-      key: 'create',
-      label: <Link to="/create">Продать</Link>,
-    }] : []),
+    ...(user ? [
+      {
+        key: 'create',
+        label: <Link to="/create">Продать</Link>,
+      },
+      {
+        key: 'messages',
+        label: <Link to="/messages">Сообщения</Link>,
+      }
+    ] : []),
   ]
 
   return (
