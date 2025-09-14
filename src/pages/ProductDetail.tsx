@@ -338,10 +338,17 @@ const ProductDetail: React.FC = () => {
                 icon={<MessageOutlined />}
                 size="large"
                 onClick={() => {
+                  console.log('ProductDetail: Клик по кнопке "Написать продавцу"')
+                  console.log('ProductDetail: Пользователь авторизован:', !!user)
+                  console.log('ProductDetail: Данные товара:', product)
+                  
                   if (!user) {
+                    console.log('ProductDetail: Пользователь не авторизован, перенаправляем на вход')
                     navigate('/login')
                     return
                   }
+                  
+                  console.log('ProductDetail: Открываем модальное окно сообщений')
                   setMessageModalVisible(true)
                 }}
                 style={{

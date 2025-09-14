@@ -27,6 +27,8 @@ const MessageModal: React.FC<MessageModalProps> = ({
   const [messageText, setMessageText] = useState('')
   const [loading, setLoading] = useState(false)
 
+  console.log('MessageModal: Компонент рендерится', { visible, sellerId, sellerName, productTitle, buyerId, buyerName })
+
   const handleSend = async () => {
     if (!messageText.trim()) {
       message.warning('Введите текст сообщения')
@@ -78,32 +80,20 @@ const MessageModal: React.FC<MessageModalProps> = ({
 
   const sendPushNotification = async (receiverId: string, senderName: string, productTitle: string, messageText: string) => {
     try {
-      console.log('MessageModal: Отправляем push-уведомление:', receiverId)
+      console.log('MessageModal: Отправляем push-уведомление через Supabase:', receiverId)
       
-      // Получаем токен устройства получателя
-      const { data: deviceData, error: deviceError } = await supabase
-        .from('user_devices')
-        .select('device_token')
-        .eq('user_id', receiverId)
-        .eq('is_active', true)
-        .single()
-
-      if (deviceError || !deviceData?.device_token) {
-        console.log('MessageModal: Токен устройства не найден, пропускаем push-уведомление')
-        return
-      }
-
-      // Отправляем push-уведомление через Supabase Edge Function
+      // Отправляем push-уведомление через Supabase
       const { error: pushError } = await supabase.functions.invoke('send-push-notification', {
         body: {
-          token: deviceData.device_token,
+          user_id: receiverId,
           title: 'Новое сообщение',
           body: `${senderName} написал вам о товаре "${productTitle}": ${messageText.substring(0, 50)}${messageText.length > 50 ? '...' : ''}`,
           data: {
             type: 'message',
             sender_id: buyerId,
             sender_name: senderName,
-            product_title: productTitle
+            product_title: productTitle,
+            message_text: messageText
           }
         }
       })
