@@ -213,7 +213,7 @@ const ChatSimple: React.FC<ChatSimpleProps> = ({
         }
       }, 1000)
       
-      // Отправляем push-уведомление
+      // Отправляем push-уведомление (пропускаем если есть ошибка CORS)
       try {
         await supabase.functions.invoke('send-push-notification', {
           body: {
@@ -228,8 +228,10 @@ const ChatSimple: React.FC<ChatSimpleProps> = ({
             }
           }
         })
+        console.log('ChatSimple: Push-уведомление отправлено')
       } catch (pushError) {
-        console.error('ChatSimple: Ошибка отправки push-уведомления:', pushError)
+        console.log('ChatSimple: Push-уведомление пропущено (CORS или функция не настроена):', pushError instanceof Error ? pushError.message : String(pushError))
+        // Не блокируем отправку сообщения из-за ошибки push-уведомлений
       }
 
     } catch (error) {
