@@ -19,30 +19,20 @@ const Register: React.FC = () => {
       const result = await signUp(values.email, values.password, values.fullName)
       console.log('Register: Результат регистрации:', result)
       
-      if (result?.needsEmailConfirmation) {
-        console.log('Register: Пользователь создан, показываем сообщение о подтверждении email')
-        
-        // Показываем сообщение о подтверждении email после успешного создания пользователя
-        message.success(
-          `Аккаунт создан! Проверьте почту ${values.email} и подтвердите ваш аккаунт в письме, которое придет на указанную почту.`,
-          10
-        )
-        
-        console.log('Register: Сообщение показано, перенаправляем через 3 секунды')
-        
-        // Перенаправляем на страницу входа
-        setTimeout(() => {
-          console.log('Register: Перенаправляем на страницу входа')
-          navigate('/login')
-        }, 3000)
-      } else {
-        console.log('Register: Регистрация успешна, перенаправляем на главную')
-        message.success('Регистрация успешна! Добро пожаловать!')
-        
-        setTimeout(() => {
-          navigate('/')
-        }, 1000)
-      }
+      // Всегда показываем сообщение о подтверждении email
+      console.log('Register: Показываем сообщение о подтверждении email')
+      message.success(
+        `Аккаунт создан! Проверьте почту ${values.email} и подтвердите ваш аккаунт в письме, которое придет на указанную почту.`,
+        10
+      )
+      
+      console.log('Register: Сообщение показано, перенаправляем через 3 секунды')
+      
+      // Перенаправляем на страницу входа
+      setTimeout(() => {
+        console.log('Register: Перенаправляем на страницу входа')
+        navigate('/login')
+      }, 3000)
       
     } catch (error: any) {
       console.error('Register: Ошибка регистрации:', error)

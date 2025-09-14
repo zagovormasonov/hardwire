@@ -182,19 +182,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     console.log('AuthContext: Регистрация успешна, пользователь создан')
+    console.log('AuthContext: Данные пользователя:', data)
 
     if (data.user) {
       console.log('AuthContext: Пользователь создан, возвращаем информацию о подтверждении email')
       
-      // Возвращаем информацию о том, что нужно подтвердить email
-      // Профиль пользователя будет создан автоматически при первом входе
-      return {
+      const result = {
         success: true,
         needsEmailConfirmation: true,
         email: data.user.email || email
       }
+      
+      console.log('AuthContext: Возвращаем результат:', result)
+      return result
     }
     
+    console.log('AuthContext: Пользователь не создан, возвращаем базовый результат')
     // Если что-то пошло не так, возвращаем базовый результат
     return {
       success: true,
