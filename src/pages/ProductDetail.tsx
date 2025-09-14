@@ -58,7 +58,7 @@ const ProductDetail: React.FC = () => {
   const [loading, setLoading] = useState(true)
   const [isLiked, setIsLiked] = useState(false)
   const [chatVisible, setChatVisible] = useState(false)
-  const [useSimpleChat] = useState(false) // Используем WebSocket чат по умолчанию
+  const [useSimpleChat] = useState(true) // Используем простой чат по умолчанию
 
   useEffect(() => {
     if (id) {
