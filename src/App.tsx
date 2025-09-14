@@ -3,6 +3,7 @@ import { ConfigProvider } from 'antd'
 import { AuthProvider } from './contexts/AuthContext'
 import { SearchProvider } from './contexts/SearchContext'
 import { NotificationProvider } from './contexts/NotificationContext'
+import { MessageNotificationProvider } from './contexts/MessageNotificationContext'
 import theme from './theme'
 import Layout from './components/Layout'
 import Home from './pages/Home'
@@ -24,6 +25,7 @@ function App() {
         <Router>
           <SearchProvider>
             <NotificationProvider>
+              <MessageNotificationProvider>
               <Routes>
                 <Route path="/" element={<Layout><Home /></Layout>} />
                 <Route path="/login" element={<Login />} />
@@ -37,6 +39,7 @@ function App() {
                 <Route path="/profile/:id" element={<Layout><SellerProfile /></Layout>} />
                 <Route path="/messages" element={<Layout><Messages /></Layout>} />
               </Routes>
+              </MessageNotificationProvider>
             </NotificationProvider>
           </SearchProvider>
         </Router>

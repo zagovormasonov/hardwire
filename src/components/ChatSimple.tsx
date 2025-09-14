@@ -126,8 +126,8 @@ const ChatSimple: React.FC<ChatSimpleProps> = ({
       }
     }
 
-    // Обновляем каждые 2 секунды
-    intervalRef.current = setInterval(updateMessages, 2000)
+    // Обновляем каждые 1 секунду для более быстрого обновления
+    intervalRef.current = setInterval(updateMessages, 1000)
 
     return () => {
       console.log('ChatSimple: Останавливаем периодическое обновление')
@@ -187,6 +187,31 @@ const ChatSimple: React.FC<ChatSimpleProps> = ({
       setTimeout(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
       }, 100)
+      
+      // Принудительно обновляем сообщения через 1 секунду для получателя
+      setTimeout(async () => {
+        try {
+          const { data } = await supabase
+            .from('messages')
+            .select(`
+              *,
+              sender:users!messages_sender_id_fkey(name, avatar_url)
+            `)
+            .or(`and(sender_id.eq.${user.id},receiver_id.eq.${sellerId}),and(sender_id.eq.${sellerId},receiver_id.eq.${user.id})`)
+            .order('created_at', { ascending: true })
+
+          const updatedMessages = data?.map(msg => ({
+            ...msg,
+            sender_name: (msg.sender as any)?.name,
+            sender_avatar: (msg.sender as any)?.avatar_url
+          })) || []
+
+          setMessages(updatedMessages)
+          console.log('ChatSimple: Принудительное обновление выполнено')
+        } catch (error) {
+          console.error('ChatSimple: Ошибка принудительного обновления:', error)
+        }
+      }, 1000)
       
       // Отправляем push-уведомление
       try {
