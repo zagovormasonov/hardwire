@@ -44,8 +44,8 @@ const ChatList: React.FC<ChatListProps> = ({ onChatSelect }) => {
             receiver_id,
             message_text,
             created_at,
-            sender:users!messages_sender_id_fkey(name, avatar_url),
-            receiver:users!messages_receiver_id_fkey(name, avatar_url)
+            sender:users!messages_sender_id_fkey(full_name, avatar_url),
+            receiver:users!messages_receiver_id_fkey(full_name, avatar_url)
           `)
           .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`)
           .order('created_at', { ascending: false })

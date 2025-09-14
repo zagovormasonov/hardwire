@@ -54,7 +54,7 @@ const ChatSimple: React.FC<ChatSimpleProps> = ({
           .from('messages')
           .select(`
             *,
-            sender:users!messages_sender_id_fkey(name, avatar_url)
+            sender:users!messages_sender_id_fkey(full_name, avatar_url)
           `)
           .or(`and(sender_id.eq.${user.id},receiver_id.eq.${sellerId}),and(sender_id.eq.${sellerId},receiver_id.eq.${user.id})`)
           .order('created_at', { ascending: true })
@@ -69,7 +69,7 @@ const ChatSimple: React.FC<ChatSimpleProps> = ({
         
         const formattedMessages = data?.map(msg => ({
           ...msg,
-          sender_name: (msg.sender as any)?.name,
+          sender_name: (msg.sender as any)?.full_name,
           sender_avatar: (msg.sender as any)?.avatar_url
         })) || []
         
@@ -97,7 +97,7 @@ const ChatSimple: React.FC<ChatSimpleProps> = ({
           .from('messages')
           .select(`
             *,
-            sender:users!messages_sender_id_fkey(name, avatar_url)
+            sender:users!messages_sender_id_fkey(full_name, avatar_url)
           `)
           .or(`and(sender_id.eq.${user.id},receiver_id.eq.${sellerId}),and(sender_id.eq.${sellerId},receiver_id.eq.${user.id})`)
           .order('created_at', { ascending: true })
@@ -109,7 +109,7 @@ const ChatSimple: React.FC<ChatSimpleProps> = ({
 
         const updatedMessages = data?.map(msg => ({
           ...msg,
-          sender_name: (msg.sender as any)?.name,
+          sender_name: (msg.sender as any)?.full_name,
           sender_avatar: (msg.sender as any)?.avatar_url
         })) || []
 
@@ -195,14 +195,14 @@ const ChatSimple: React.FC<ChatSimpleProps> = ({
             .from('messages')
             .select(`
               *,
-              sender:users!messages_sender_id_fkey(name, avatar_url)
+              sender:users!messages_sender_id_fkey(full_name, avatar_url)
             `)
             .or(`and(sender_id.eq.${user.id},receiver_id.eq.${sellerId}),and(sender_id.eq.${sellerId},receiver_id.eq.${user.id})`)
             .order('created_at', { ascending: true })
 
           const updatedMessages = data?.map(msg => ({
             ...msg,
-            sender_name: (msg.sender as any)?.name,
+            sender_name: (msg.sender as any)?.full_name,
             sender_avatar: (msg.sender as any)?.avatar_url
           })) || []
 

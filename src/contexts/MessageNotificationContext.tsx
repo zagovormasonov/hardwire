@@ -37,7 +37,7 @@ export const MessageNotificationProvider: React.FC<{ children: React.ReactNode }
           .from('messages')
           .select(`
             *,
-            sender:users!messages_sender_id_fkey(name, avatar_url)
+            sender:users!messages_sender_id_fkey(full_name, avatar_url)
           `)
           .eq('receiver_id', user.id)
           .eq('is_read', false)
@@ -58,7 +58,7 @@ export const MessageNotificationProvider: React.FC<{ children: React.ReactNode }
             receiver_id: msg.receiver_id,
             message_text: msg.message_text,
             created_at: msg.created_at,
-            sender_name: (msg.sender as any)?.name
+            sender_name: (msg.sender as any)?.full_name
           }))
 
           // Добавляем только новые уведомления
