@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { useParams } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
 import { 
   Card, 
   Row, 
@@ -22,6 +22,8 @@ import {
   UserOutlined
 } from '@ant-design/icons'
 import { supabase } from '../lib/supabase'
+import { useAuth } from '../contexts/AuthContext'
+import { useNotifications } from '../contexts/NotificationContext'
 
 const { Title, Text, Paragraph } = Typography
 
@@ -47,8 +49,12 @@ interface Product {
 
 const ProductDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>()
+  const navigate = useNavigate()
+  const { user } = useAuth()
+  const { addNotification } = useNotifications()
   const [product, setProduct] = useState<Product | null>(null)
   const [loading, setLoading] = useState(true)
+  const [isLiked, setIsLiked] = useState(false)
 
   useEffect(() => {
     if (id) {
@@ -67,6 +73,10 @@ const ProductDetail: React.FC = () => {
             full_name,
             avatar_url,
             email
+          ),
+          favorites!left (
+            id,
+            user_id
           )
         `)
         .eq('id', id)
@@ -74,6 +84,12 @@ const ProductDetail: React.FC = () => {
 
       if (error) throw error
       setProduct(data)
+      
+      // Проверяем, добавлен ли товар в избранное текущим пользователем
+      if (user && data.favorites) {
+        const userFavorite = data.favorites.find((fav: any) => fav.user_id === user.id)
+        setIsLiked(!!userFavorite)
+      }
     } catch (error) {
       console.error('Error fetching product:', error)
     } finally {
@@ -83,6 +99,57 @@ const ProductDetail: React.FC = () => {
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('ru-RU').format(price) + ' ₽'
+  }
+
+  const toggleLike = async () => {
+    if (!user) {
+      addNotification({
+        type: 'warning',
+        title: 'Необходима авторизация',
+        message: 'Войдите в систему, чтобы добавлять товары в избранное'
+      })
+      return
+    }
+
+    if (!product) return
+
+    try {
+      if (isLiked) {
+        const { error } = await supabase
+          .from('favorites')
+          .delete()
+          .eq('product_id', product.id)
+          .eq('user_id', user.id)
+
+        if (error) throw error
+
+        setIsLiked(false)
+        addNotification({
+          type: 'info',
+          title: 'Удалено из избранного',
+          message: 'Товар больше не в вашем списке избранного'
+        })
+      } else {
+        const { error } = await supabase
+          .from('favorites')
+          .insert([{ product_id: product.id, user_id: user.id }])
+
+        if (error) throw error
+
+        setIsLiked(true)
+        addNotification({
+          type: 'success',
+          title: 'Добавлено в избранное',
+          message: 'Товар добавлен в ваш список избранного'
+        })
+      }
+    } catch (error) {
+      addNotification({
+        type: 'error',
+        title: 'Ошибка',
+        message: 'Не удалось обновить избранное. Попробуйте еще раз.'
+      })
+    }
   }
 
   const getConditionText = (condition: string) => {
@@ -231,7 +298,20 @@ const ProductDetail: React.FC = () => {
               <Title level={4} style={{ color: '#ffffff', marginBottom: '12px' }}>
                 Продавец
               </Title>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div 
+                style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '12px',
+                  cursor: 'pointer',
+                  padding: '8px',
+                  borderRadius: '8px',
+                  transition: 'background-color 0.2s',
+                }}
+                onClick={() => navigate(`/profile/${product.seller_id}`)}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#2a2a2a'}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+              >
                 <Avatar
                   src={product.users?.avatar_url}
                   size={48}
@@ -268,13 +348,14 @@ const ProductDetail: React.FC = () => {
               <Button
                 icon={<HeartOutlined />}
                 size="large"
+                onClick={toggleLike}
                 style={{
-                  background: 'transparent',
-                  borderColor: '#374151',
-                  color: '#ffffff',
+                  background: isLiked ? '#ff4757' : 'transparent',
+                  borderColor: isLiked ? '#ff4757' : '#374151',
+                  color: isLiked ? '#ffffff' : '#ffffff',
                 }}
               >
-                В избранное
+                {isLiked ? 'В избранном' : 'В избранное'}
               </Button>
               
               <Button

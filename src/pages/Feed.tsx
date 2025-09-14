@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
+import { useSearchParams, useNavigate } from 'react-router-dom'
 import { 
   Card, 
   Row, 
@@ -22,7 +22,6 @@ import {
   FilterOutlined, 
   HeartOutlined, 
   MessageOutlined, 
-  EyeOutlined,
   SortAscendingOutlined,
   SortDescendingOutlined
 } from '@ant-design/icons'
@@ -58,6 +57,7 @@ interface Product {
 
 const Feed: React.FC = () => {
   const [searchParams] = useSearchParams()
+  const navigate = useNavigate()
   const { user } = useAuth()
   const { addNotification } = useNotifications()
   const [products, setProducts] = useState<Product[]>([])
@@ -322,15 +322,20 @@ const Feed: React.FC = () => {
             <Col xs={24} sm={12} lg={8} xl={6} key={product.id}>
               <Card
                 hoverable
+                onClick={() => navigate(`/product/${product.id}`)}
                 style={{
                   background: '#1a1a1a',
                   border: '1px solid #374151',
                   borderRadius: '12px',
                   height: '100%',
+                  cursor: 'pointer',
                 }}
                 bodyStyle={{ padding: '16px' }}
                 cover={
-                  <div style={{ height: '200px', overflow: 'hidden' }}>
+                  <div 
+                    style={{ height: '200px', overflow: 'hidden' }}
+                    onClick={(e) => e.stopPropagation()}
+                  >
                     {product.images && product.images.length > 0 ? (
                       <img
                         alt={product.title}
@@ -399,7 +404,10 @@ const Feed: React.FC = () => {
                     <Button
                       type="text"
                       icon={<HeartOutlined />}
-                      onClick={() => toggleLike(product.id, product.is_liked || false)}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        toggleLike(product.id, product.is_liked || false)
+                      }}
                       style={{
                         color: product.is_liked ? '#ff4757' : '#ffffff',
                       }}
@@ -410,6 +418,7 @@ const Feed: React.FC = () => {
                     <Button
                       type="text"
                       icon={<MessageOutlined />}
+                      onClick={(e) => e.stopPropagation()}
                       style={{ color: '#ffffff' }}
                     />
                   </Space>
@@ -422,7 +431,13 @@ const Feed: React.FC = () => {
                   justifyContent: 'space-between', 
                   alignItems: 'center' 
                 }}>
-                  <Space>
+                  <Space 
+                    style={{ cursor: 'pointer' }}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      navigate(`/profile/${product.seller_id}`)
+                    }}
+                  >
                     <Avatar 
                       src={product.users?.avatar_url}
                       size="small"
@@ -434,20 +449,9 @@ const Feed: React.FC = () => {
                     </Text>
                   </Space>
                   
-                  <Button
-                    type="primary"
-                    size="small"
-                    icon={<EyeOutlined />}
-                    style={{
-                      background: '#00ff88',
-                      borderColor: '#00ff88',
-                      color: '#000',
-                    }}
-                  >
-                    <Link to={`/product/${product.id}`} style={{ color: '#000' }}>
-                      Смотреть
-                    </Link>
-                  </Button>
+                  <Text style={{ color: '#9ca3af', fontSize: '12px' }}>
+                    {new Date(product.created_at).toLocaleDateString('ru-RU')}
+                  </Text>
                 </div>
               </Card>
             </Col>
