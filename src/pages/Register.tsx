@@ -8,6 +8,8 @@ const { Title, Text } = Typography
 
 const Register: React.FC = () => {
   const [loading, setLoading] = useState(false)
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false)
+  const [successEmail, setSuccessEmail] = useState('')
   const { signUp } = useAuth()
   const navigate = useNavigate()
 
@@ -19,20 +21,29 @@ const Register: React.FC = () => {
       const result = await signUp(values.email, values.password, values.fullName)
       console.log('Register: Результат регистрации:', result)
       
-      // Всегда показываем сообщение о подтверждении email
-      console.log('Register: Показываем сообщение о подтверждении email')
-      message.success(
-        `Аккаунт создан! Проверьте почту ${values.email} и подтвердите ваш аккаунт в письме, которое придет на указанную почту.`,
-        10
-      )
+      // Показываем собственное сообщение о подтверждении email
+      console.log('Register: Показываем собственное сообщение о подтверждении email')
+      setSuccessEmail(values.email)
+      setShowSuccessMessage(true)
       
-      console.log('Register: Сообщение показано, перенаправляем через 3 секунды')
+      // Также попробуем показать через message
+      try {
+        message.success(
+          `Аккаунт создан! Проверьте почту ${values.email} и подтвердите ваш аккаунт в письме, которое придет на указанную почту.`,
+          10
+        )
+        console.log('Register: message.success вызван')
+      } catch (msgError) {
+        console.error('Register: Ошибка с message.success:', msgError)
+      }
+      
+      console.log('Register: Сообщение показано, перенаправляем через 5 секунд')
       
       // Перенаправляем на страницу входа
       setTimeout(() => {
         console.log('Register: Перенаправляем на страницу входа')
         navigate('/login')
-      }, 3000)
+      }, 5000)
       
     } catch (error: any) {
       console.error('Register: Ошибка регистрации:', error)
@@ -51,6 +62,34 @@ const Register: React.FC = () => {
       justifyContent: 'center',
       padding: '24px',
     }}>
+      {/* Собственное сообщение об успехе */}
+      {showSuccessMessage && (
+        <div style={{
+          position: 'fixed',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          background: '#00ff88',
+          color: '#000',
+          padding: '24px',
+          borderRadius: '12px',
+          zIndex: 9999,
+          maxWidth: '400px',
+          textAlign: 'center',
+          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
+        }}>
+          <Title level={3} style={{ color: '#000', marginBottom: '12px' }}>
+            ✅ Аккаунт создан!
+          </Title>
+          <Text style={{ color: '#000', fontSize: '16px', display: 'block', marginBottom: '8px' }}>
+            Проверьте почту <strong>{successEmail}</strong>
+          </Text>
+          <Text style={{ color: '#000', fontSize: '14px' }}>
+            и подтвердите ваш аккаунт в письме, которое придет на указанную почту.
+          </Text>
+        </div>
+      )}
+      
       <Card
         style={{
           width: '100%',
