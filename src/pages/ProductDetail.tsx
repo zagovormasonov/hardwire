@@ -1,7 +1,29 @@
 import React, { useState, useEffect } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
+import { 
+  Card, 
+  Row, 
+  Col, 
+  Typography, 
+  Button, 
+  Space, 
+  Avatar, 
+  Tag, 
+  Spin, 
+  Empty,
+  Image,
+  Divider
+} from 'antd'
+import { 
+  ArrowLeftOutlined, 
+  HeartOutlined, 
+  MessageOutlined, 
+  ShareAltOutlined,
+  UserOutlined
+} from '@ant-design/icons'
 import { supabase } from '../lib/supabase'
-import { ArrowLeft, Heart, MessageCircle, Share2, Eye } from 'lucide-react'
+
+const { Title, Text, Paragraph } = Typography
 
 // Типы для товаров
 interface Product {
@@ -27,8 +49,6 @@ const ProductDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>()
   const [product, setProduct] = useState<Product | null>(null)
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
-  const [currentImageIndex, setCurrentImageIndex] = useState(0)
 
   useEffect(() => {
     if (id) {
@@ -38,11 +58,12 @@ const ProductDetail: React.FC = () => {
 
   const fetchProduct = async () => {
     try {
+      setLoading(true)
       const { data, error } = await supabase
         .from('products')
         .select(`
           *,
-          users:seller_id (
+          users!products_seller_id_fkey (
             full_name,
             avatar_url,
             email
@@ -53,9 +74,8 @@ const ProductDetail: React.FC = () => {
 
       if (error) throw error
       setProduct(data)
-    } catch (error: any) {
-      console.error('ProductDetail: Error fetching product:', error)
-      setError('Товар не найден')
+    } catch (error) {
+      console.error('Error fetching product:', error)
     } finally {
       setLoading(false)
     }
@@ -67,154 +87,220 @@ const ProductDetail: React.FC = () => {
 
   const getConditionText = (condition: string) => {
     switch (condition) {
-      case 'new': return 'Новое'
+      case 'new': return 'Новый'
       case 'used': return 'Б/У'
-      case 'refurbished': return 'Восстановленное'
+      case 'refurbished': return 'Восстановленный'
       default: return condition
+    }
+  }
+
+  const getConditionColor = (condition: string) => {
+    switch (condition) {
+      case 'new': return 'green'
+      case 'used': return 'orange'
+      case 'refurbished': return 'blue'
+      default: return 'default'
     }
   }
 
   if (loading) {
     return (
-      <div className="text-center py-16">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-400 mx-auto mb-4"></div>
-        <p className="text-gray-300">Загрузка товара...</p>
+      <div style={{ textAlign: 'center', padding: '64px 0' }}>
+        <Spin size="large" />
       </div>
     )
   }
 
-  if (error || !product) {
+  if (!product) {
     return (
-      <div className="text-center py-16">
-        <p className="text-red-400 text-lg mb-4">{error || 'Товар не найден'}</p>
-        <Link to="/feed" className="btn btn-primary">
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Вернуться к ленте
-        </Link>
+      <div style={{ padding: '24px 0' }}>
+        <Empty description="Товар не найден" />
       </div>
     )
   }
 
   return (
-    <div className="max-w-6xl mx-auto space-y-8">
-      {/* Навигация */}
-      <div className="flex items-center space-x-4">
-        <Link to="/feed" className="btn btn-secondary">
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Назад к ленте
-        </Link>
-        <span className="text-gray-400">/</span>
-        <span className="text-gray-300">{product.category}</span>
-      </div>
+    <div style={{ padding: '24px 0' }}>
+      <Button
+        icon={<ArrowLeftOutlined />}
+        onClick={() => window.history.back()}
+        style={{ marginBottom: '24px' }}
+      >
+        Назад
+      </Button>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <Row gutter={[32, 32]}>
         {/* Изображения */}
-        <div className="space-y-4">
-          <div className="aspect-square bg-gray-800 rounded-xl overflow-hidden">
-            {product.images.length > 0 ? (
-              <img
-                src={product.images[currentImageIndex]}
-                alt={product.title}
-                className="w-full h-full object-cover"
-              />
+        <Col xs={24} lg={12}>
+          <Card
+            style={{
+              background: '#1a1a1a',
+              border: '1px solid #374151',
+              borderRadius: '16px',
+            }}
+            bodyStyle={{ padding: '24px' }}
+          >
+            {product.images && product.images.length > 0 ? (
+              <Image.PreviewGroup>
+                <Image
+                  src={product.images[0]}
+                  alt={product.title}
+                  style={{
+                    width: '100%',
+                    borderRadius: '8px',
+                  }}
+                />
+                {product.images.length > 1 && (
+                  <div style={{ marginTop: '16px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                    {product.images.slice(1).map((image, index) => (
+                      <Image
+                        key={index}
+                        src={image}
+                        alt={`${product.title} ${index + 2}`}
+                        style={{
+                          width: '80px',
+                          height: '80px',
+                          objectFit: 'cover',
+                          borderRadius: '8px',
+                        }}
+                      />
+                    ))}
+                  </div>
+                )}
+              </Image.PreviewGroup>
             ) : (
-              <div className="w-full h-full flex items-center justify-center text-gray-500">
-                <Eye className="w-16 h-16" />
+              <div style={{
+                width: '100%',
+                height: '400px',
+                background: '#2a2a2a',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderRadius: '8px',
+                color: '#9ca3af',
+              }}>
+                Нет изображений
               </div>
             )}
-          </div>
-          
-          {product.images.length > 1 && (
-            <div className="grid grid-cols-4 gap-2">
-              {product.images.map((image, index) => (
-                <button
-                  key={index}
-                  onClick={() => setCurrentImageIndex(index)}
-                  className={`aspect-square rounded-lg overflow-hidden border-2 transition-colors ${
-                    index === currentImageIndex
-                      ? 'border-green-400'
-                      : 'border-gray-600 hover:border-gray-500'
-                  }`}
-                >
-                  <img
-                    src={image}
-                    alt={`${product.title} ${index + 1}`}
-                    className="w-full h-full object-cover"
-                  />
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
+          </Card>
+        </Col>
 
         {/* Информация о товаре */}
-        <div className="space-y-6">
-          <div>
-            <h1 className="text-3xl font-bold text-white mb-2">{product.title}</h1>
-            <div className="flex items-center space-x-4 text-gray-400">
-              <span>{product.category}</span>
-              <span>•</span>
-              <span>{getConditionText(product.condition)}</span>
+        <Col xs={24} lg={12}>
+          <Card
+            style={{
+              background: '#1a1a1a',
+              border: '1px solid #374151',
+              borderRadius: '16px',
+            }}
+            bodyStyle={{ padding: '24px' }}
+          >
+            <div style={{ marginBottom: '24px' }}>
+              <Title level={2} style={{ color: '#ffffff', marginBottom: '8px' }}>
+                {product.title}
+              </Title>
+              
+              <Space size="middle" style={{ marginBottom: '16px' }}>
+                <Tag color="blue">{product.category}</Tag>
+                <Tag color={getConditionColor(product.condition)}>
+                  {getConditionText(product.condition)}
+                </Tag>
+                {product.is_sold && <Tag color="red">Продан</Tag>}
+              </Space>
+
+              <Title level={1} style={{ color: '#00ff88', margin: '16px 0' }}>
+                {formatPrice(product.price)}
+              </Title>
             </div>
-          </div>
 
-          <div className="text-4xl font-bold text-green-400">
-            {formatPrice(product.price)}
-          </div>
+            <Divider style={{ borderColor: '#374151' }} />
 
-          <div className="space-y-4">
-            <h3 className="text-xl font-semibold text-white">Описание</h3>
-            <p className="text-gray-300 leading-relaxed whitespace-pre-line">
-              {product.description}
-            </p>
-          </div>
+            <div style={{ marginBottom: '24px' }}>
+              <Title level={4} style={{ color: '#ffffff', marginBottom: '12px' }}>
+                Описание
+              </Title>
+              <Paragraph style={{ color: '#9ca3af', fontSize: '16px', lineHeight: '1.6' }}>
+                {product.description}
+              </Paragraph>
+            </div>
 
-          {/* Продавец */}
-          <div className="card">
-            <h3 className="text-lg font-semibold text-white mb-4">Продавец</h3>
-            <div className="flex items-center space-x-4">
-              <div className="w-12 h-12 bg-gradient-to-r from-green-400 to-blue-400 rounded-full flex items-center justify-center overflow-hidden">
-                {product.users?.avatar_url ? (
-                  <img 
-                    src={product.users.avatar_url} 
-                    alt={product.users.full_name}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <span className="text-black font-bold text-lg">
-                    {product.users?.full_name?.charAt(0).toUpperCase() || '?'}
-                  </span>
-                )}
-              </div>
-              <div>
-                <Link 
-                  to={`/profile/${product.seller_id}`}
-                  className="text-lg font-semibold text-white hover:text-green-400 transition-colors"
-                >
-                  {product.users?.full_name || 'Неизвестный'}
-                </Link>
-                <p className="text-gray-400 text-sm">
-                  На сайте с {new Date(product.created_at).toLocaleDateString('ru-RU')}
-                </p>
+            <Divider style={{ borderColor: '#374151' }} />
+
+            {/* Информация о продавце */}
+            <div style={{ marginBottom: '24px' }}>
+              <Title level={4} style={{ color: '#ffffff', marginBottom: '12px' }}>
+                Продавец
+              </Title>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <Avatar
+                  src={product.users?.avatar_url}
+                  size={48}
+                  icon={<UserOutlined />}
+                />
+                <div>
+                  <Text style={{ color: '#ffffff', fontSize: '16px', fontWeight: 'bold' }}>
+                    {product.users?.full_name}
+                  </Text>
+                  <br />
+                  <Text style={{ color: '#9ca3af', fontSize: '14px' }}>
+                    Продавец
+                  </Text>
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* Действия */}
-          <div className="flex space-x-4">
-            <button className="btn btn-primary flex-1">
-              <MessageCircle className="w-4 h-4 mr-2" />
-              Написать продавцу
-            </button>
-            <button className="btn btn-secondary">
-              <Heart className="w-4 h-4" />
-            </button>
-            <button className="btn btn-secondary">
-              <Share2 className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
-      </div>
+            {/* Действия */}
+            <Space size="middle" style={{ width: '100%' }}>
+              <Button
+                type="primary"
+                icon={<MessageOutlined />}
+                size="large"
+                style={{
+                  background: '#00ff88',
+                  borderColor: '#00ff88',
+                  color: '#000',
+                  flex: 1,
+                }}
+              >
+                Написать продавцу
+              </Button>
+              
+              <Button
+                icon={<HeartOutlined />}
+                size="large"
+                style={{
+                  background: 'transparent',
+                  borderColor: '#374151',
+                  color: '#ffffff',
+                }}
+              >
+                В избранное
+              </Button>
+              
+              <Button
+                icon={<ShareAltOutlined />}
+                size="large"
+                style={{
+                  background: 'transparent',
+                  borderColor: '#374151',
+                  color: '#ffffff',
+                }}
+              >
+                Поделиться
+              </Button>
+            </Space>
+
+            {/* Дополнительная информация */}
+            <Divider style={{ borderColor: '#374151' }} />
+            
+            <div style={{ color: '#9ca3af', fontSize: '14px' }}>
+              <Text>Дата публикации: {new Date(product.created_at).toLocaleDateString('ru-RU')}</Text>
+              <br />
+              <Text>Обновлено: {new Date(product.updated_at).toLocaleDateString('ru-RU')}</Text>
+            </div>
+          </Card>
+        </Col>
+      </Row>
     </div>
   )
 }

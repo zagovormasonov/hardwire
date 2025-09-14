@@ -1,9 +1,40 @@
 import React, { useState, useEffect } from 'react'
+import { 
+  Card, 
+  Row, 
+  Col, 
+  Typography, 
+  Button, 
+  Input, 
+  Avatar, 
+  Space, 
+  Statistic, 
+  Spin, 
+  Empty,
+  Upload,
+  message,
+  Modal,
+  Tag
+} from 'antd'
+import { 
+  MailOutlined, 
+  SaveOutlined, 
+  EditOutlined, 
+  InboxOutlined, 
+  EyeOutlined, 
+  DeleteOutlined, 
+  EyeInvisibleOutlined, 
+  PlusOutlined, 
+  HeartOutlined,
+  CameraOutlined
+} from '@ant-design/icons'
 import { useAuth } from '../contexts/AuthContext'
 import { useNotifications } from '../contexts/NotificationContext'
 import { supabase } from '../lib/supabase'
-import { Mail, Save, Edit3, Package, Eye, Trash2, EyeOff, Plus, Edit, Heart, Camera } from 'lucide-react'
 import { Link } from 'react-router-dom'
+
+const { Title, Text, Paragraph } = Typography
+const { confirm } = Modal
 
 // Типы для товаров
 interface Product {
@@ -46,10 +77,8 @@ const Profile: React.FC = () => {
     full_name: user?.full_name || ''
   })
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
   const [uploadingAvatar, setUploadingAvatar] = useState(false)
   
-  // Новые состояния для товаров и статистики
   const [products, setProducts] = useState<Product[]>([])
   const [favorites, setFavorites] = useState<Favorite[]>([])
   const [stats, setStats] = useState<UserStats>({
@@ -82,12 +111,12 @@ const Profile: React.FC = () => {
       if (error) throw error
 
       setProducts(data || [])
-      
-      // Подсчет статистики
+
+      // Подсчитываем статистику
       const totalProducts = data?.length || 0
       const activeProducts = data?.filter(p => p.is_active && !p.is_sold).length || 0
       const soldProducts = data?.filter(p => p.is_sold).length || 0
-      
+
       setStats({
         total_products: totalProducts,
         active_products: activeProducts,
@@ -145,7 +174,6 @@ const Profile: React.FC = () => {
 
       if (error) throw error
 
-      // Обновляем локальное состояние
       setFavorites(prev => prev.filter(fav => fav.id !== favoriteId))
       
       addNotification({
@@ -169,28 +197,17 @@ const Profile: React.FC = () => {
     })
   }
 
-  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file || !user) return
+  const handleAvatarUpload = async (file: any) => {
+    if (!user) return false
 
-    // Проверяем размер файла (максимум 5MB)
     if (file.size > 5 * 1024 * 1024) {
-      addNotification({
-        type: 'error',
-        title: 'Файл слишком большой',
-        message: 'Размер файла не должен превышать 5MB'
-      })
-      return
+      message.error('Размер файла не должен превышать 5MB')
+      return false
     }
 
-    // Проверяем тип файла
     if (!file.type.startsWith('image/')) {
-      addNotification({
-        type: 'error',
-        title: 'Неверный формат файла',
-        message: 'Выберите изображение (JPG, PNG, GIF)'
-      })
-      return
+      message.error('Выберите изображение (JPG, PNG, GIF)')
+      return false
     }
 
     setUploadingAvatar(true)
@@ -201,60 +218,43 @@ const Profile: React.FC = () => {
 
       const { error: uploadError } = await supabase.storage
         .from('avatars')
-        .upload(filePath, file, {
-          cacheControl: '3600',
-          upsert: true
-        })
+        .upload(filePath, file, { cacheControl: '3600', upsert: true })
 
       if (uploadError) throw uploadError
 
-      const { data } = supabase.storage
-        .from('avatars')
-        .getPublicUrl(filePath)
+      const { data } = supabase.storage.from('avatars').getPublicUrl(filePath)
 
-      // Обновляем профиль пользователя через updateProfile
-      await updateProfile({
-        avatar_url: data.publicUrl
-      })
+      await updateProfile({ avatar_url: data.publicUrl })
 
-      addNotification({
-        type: 'success',
-        title: 'Аватар обновлен',
-        message: 'Ваш аватар успешно загружен'
-      })
+      addNotification({ type: 'success', title: 'Аватар обновлен', message: 'Ваш аватар успешно загружен' })
+      return false // Предотвращаем автоматическую загрузку
     } catch (error: any) {
-      addNotification({
-        type: 'error',
-        title: 'Ошибка загрузки',
-        message: error.message || 'Не удалось загрузить аватар'
-      })
+      addNotification({ type: 'error', title: 'Ошибка загрузки', message: error.message || 'Не удалось загрузить аватар' })
+      return false
     } finally {
       setUploadingAvatar(false)
-      // Очищаем input
-      e.target.value = ''
     }
   }
 
   const handleSave = async () => {
     setLoading(true)
-    setError('')
 
     try {
       await updateProfile(formData)
       setIsEditing(false)
+      message.success('Профиль обновлен')
     } catch (error: any) {
-      setError(error.message || 'Ошибка обновления профиля')
+      message.error(error.message || 'Ошибка обновления профиля')
     } finally {
       setLoading(false)
     }
   }
 
   const handleCancel = () => {
+    setIsEditing(false)
     setFormData({
       full_name: user?.full_name || ''
     })
-    setIsEditing(false)
-    setError('')
   }
 
   const toggleProductStatus = async (productId: string, isActive: boolean) => {
@@ -266,8 +266,7 @@ const Profile: React.FC = () => {
 
       if (error) throw error
 
-      // Обновляем локальное состояние
-      setProducts(products.map(p => 
+      setProducts(prev => prev.map(p => 
         p.id === productId ? { ...p, is_active: !isActive } : p
       ))
 
@@ -275,35 +274,43 @@ const Profile: React.FC = () => {
       const newActiveCount = isActive ? stats.active_products - 1 : stats.active_products + 1
       setStats({ ...stats, active_products: newActiveCount })
     } catch (error) {
-      setError('Ошибка изменения статуса товара')
+      message.error('Ошибка изменения статуса товара')
     }
   }
 
   const deleteProduct = async (productId: string) => {
-    if (!confirm('Вы уверены, что хотите удалить этот товар?')) return
+    confirm({
+      title: 'Удалить товар?',
+      content: 'Вы уверены, что хотите удалить этот товар? Это действие нельзя отменить.',
+      okText: 'Удалить',
+      okType: 'danger',
+      cancelText: 'Отмена',
+      onOk: async () => {
+        try {
+          const { error } = await supabase
+            .from('products')
+            .delete()
+            .eq('id', productId)
 
-    try {
-      const { error } = await supabase
-        .from('products')
-        .delete()
-        .eq('id', productId)
+          if (error) throw error
 
-      if (error) throw error
+          const deletedProduct = products.find(p => p.id === productId)
+          setProducts(prev => prev.filter(p => p.id !== productId))
 
-      // Обновляем локальное состояние
-      const deletedProduct = products.find(p => p.id === productId)
-      setProducts(products.filter(p => p.id !== productId))
+          // Обновляем статистику
+          setStats({
+            total_products: stats.total_products - 1,
+            active_products: deletedProduct?.is_active ? stats.active_products - 1 : stats.active_products,
+            sold_products: deletedProduct?.is_sold ? stats.sold_products - 1 : stats.sold_products,
+            total_views: stats.total_views
+          })
 
-      // Обновляем статистику
-      setStats({
-        total_products: stats.total_products - 1,
-        active_products: deletedProduct?.is_active ? stats.active_products - 1 : stats.active_products,
-        sold_products: deletedProduct?.is_sold ? stats.sold_products - 1 : stats.sold_products,
-        total_views: stats.total_views
-      })
-    } catch (error) {
-      setError('Ошибка удаления товара')
-    }
+          message.success('Товар удален')
+        } catch (error) {
+          message.error('Ошибка удаления товара')
+        }
+      }
+    })
   }
 
   const formatPrice = (price: number) => {
@@ -312,373 +319,495 @@ const Profile: React.FC = () => {
 
   const getConditionText = (condition: string) => {
     switch (condition) {
-      case 'new': return 'Новое'
+      case 'new': return 'Новый'
       case 'used': return 'Б/У'
-      case 'refurbished': return 'Восстановленное'
+      case 'refurbished': return 'Восстановленный'
       default: return condition
+    }
+  }
+
+  const getConditionColor = (condition: string) => {
+    switch (condition) {
+      case 'new': return 'green'
+      case 'used': return 'orange'
+      case 'refurbished': return 'blue'
+      default: return 'default'
     }
   }
 
   if (!user) {
     return (
-      <div className="text-center py-16">
-        <p className="text-gray-300 text-lg">Пользователь не найден</p>
+      <div style={{ textAlign: 'center', padding: '64px 0' }}>
+        <Empty description="Пользователь не найден" />
       </div>
     )
   }
 
   return (
-    <div className="max-w-6xl mx-auto space-y-8">
+    <div style={{ padding: '24px 0' }}>
       {/* Заголовок */}
-      <div className="text-center">
-        <h1 className="text-3xl font-bold text-white mb-2">
-          Профиль пользователя
-        </h1>
-        <p className="text-gray-400">
+      <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+        <Title level={2} style={{ color: '#ffffff', marginBottom: '8px' }}>
+          Личный кабинет
+        </Title>
+        <Paragraph style={{ color: '#9ca3af', fontSize: '16px', margin: 0 }}>
           Управляй своими данными и товарами
-        </p>
+        </Paragraph>
       </div>
 
       {/* Карточка профиля */}
-      <div className="card profile-card">
-        <div className="flex flex-col md:flex-row items-center md:items-start space-y-6 md:space-y-0 md:space-x-8 profile-content">
-          {/* Аватар */}
-          <div className="relative">
-            <div 
-              className="w-20 h-20 md:w-24 md:h-24 bg-gradient-to-r from-green-400 to-blue-400 rounded-full flex items-center justify-center overflow-hidden cursor-pointer hover:opacity-80 transition-opacity profile-avatar"
-              onClick={() => {
-                if (isEditing) {
-                  document.getElementById('avatar-upload')?.click()
-                }
-              }}
-            >
-              {user?.avatar_url ? (
-                <img 
-                  src={user.avatar_url} 
-                  alt={user.full_name}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <span className="text-black font-bold text-xl md:text-2xl">
-                  {user?.full_name?.charAt(0).toUpperCase() || '?'}
-                </span>
-              )}
-            </div>
-            {isEditing && (
-              <div className="absolute -bottom-1 -right-1 bg-green-400 text-black rounded-full p-1 cursor-pointer hover:bg-green-300 transition-colors avatar-camera-icon">
-                <Camera className="w-3 h-3" />
-              </div>
-            )}
-            {isEditing && (
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleAvatarUpload}
-                className="hidden"
-                id="avatar-upload"
-                disabled={uploadingAvatar}
-              />
-            )}
-          </div>
-
-          {/* Информация */}
-          <div className="flex-1 space-y-6">
-            {/* Имя */}
-            <div>
-              <label className="block text-sm font-medium text-white mb-2">
-                Полное имя
-              </label>
-              {isEditing ? (
-                <input
-                  type="text"
-                  name="full_name"
-                  value={formData.full_name}
-                  onChange={handleChange}
-                  className="input w-full"
-                  placeholder="Введите ваше имя"
-                />
-              ) : (
-                <p className="text-white text-lg font-medium">
-                  {user.full_name}
-                </p>
-              )}
-            </div>
-
-            {/* Email */}
-            <div>
-              <label className="block text-sm font-medium text-white mb-2">
-                Email
-              </label>
-              <div className="flex items-center space-x-2">
-                <Mail className="w-4 h-4 text-gray-400" />
-                <p className="text-gray-300">
-                  {user.email}
-                </p>
-              </div>
-            </div>
-
-            {/* Дата регистрации */}
-            <div>
-              <label className="block text-sm font-medium text-white mb-2">
-                Дата регистрации
-              </label>
-              <p className="text-gray-300">
-                {new Date(user.created_at).toLocaleDateString('ru-RU')}
-              </p>
-            </div>
-
-            {/* Ошибка */}
-            {error && (
-              <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3">
-                <p className="text-red-400 text-sm">{error}</p>
-              </div>
-            )}
-
-            {/* Кнопки */}
-            <div className="flex space-x-4">
-              {isEditing ? (
-                <>
-                  <button
-                    onClick={handleSave}
-                    disabled={loading}
-                    className="btn btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <Save className="w-4 h-4 mr-2" />
-                    {loading ? 'Сохранение...' : 'Сохранить'}
-                  </button>
-                  <button
-                    onClick={handleCancel}
-                    className="btn btn-secondary"
-                  >
-                    Отмена
-                  </button>
-                </>
-              ) : (
-                <button
-                  onClick={() => setIsEditing(true)}
-                  className="btn btn-primary"
+      <Card
+        style={{
+          background: '#1a1a1a',
+          border: '1px solid #374151',
+          borderRadius: '16px',
+          marginBottom: '32px',
+          height: '290px',
+        }}
+        bodyStyle={{ padding: '32px', height: '100%', display: 'flex', alignItems: 'center' }}
+      >
+        <Row gutter={[32, 32]} style={{ width: '100%' }}>
+          <Col xs={24} md={8} style={{ textAlign: 'center' }}>
+            <div style={{ position: 'relative', display: 'inline-block' }}>
+              <Avatar
+                size={120}
+                src={user.avatar_url}
+                style={{
+                  background: 'linear-gradient(135deg, #00ff88 0%, #00cc6a 100%)',
+                  color: '#000',
+                  fontSize: '48px',
+                  fontWeight: 'bold',
+                }}
+              >
+                {user.full_name.charAt(0).toUpperCase()}
+              </Avatar>
+              {isEditing && (
+                <Upload
+                  beforeUpload={handleAvatarUpload}
+                  showUploadList={false}
+                  accept="image/*"
                 >
-                  <Edit3 className="w-4 h-4 mr-2" />
-                  Редактировать
-                </button>
+                  <Button
+                    type="primary"
+                    shape="circle"
+                    icon={<CameraOutlined />}
+                    size="small"
+                    style={{
+                      position: 'absolute',
+                      bottom: 0,
+                      right: 0,
+                      background: '#00ff88',
+                      borderColor: '#00ff88',
+                      color: '#000',
+                    }}
+                    loading={uploadingAvatar}
+                  />
+                </Upload>
               )}
             </div>
-          </div>
-        </div>
-      </div>
+          </Col>
+          
+          <Col xs={24} md={16}>
+            <div style={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+              <div style={{ marginBottom: '16px' }}>
+                <Text style={{ color: '#9ca3af', fontSize: '14px' }}>Полное имя</Text>
+                {isEditing ? (
+                  <Input
+                    name="full_name"
+                    value={formData.full_name}
+                    onChange={handleChange}
+                    style={{
+                      background: '#2a2a2a',
+                      border: '1px solid #374151',
+                      borderRadius: '8px',
+                      marginTop: '4px',
+                    }}
+                  />
+                ) : (
+                  <Title level={4} style={{ color: '#ffffff', margin: '4px 0 0 0' }}>
+                    {user.full_name}
+                  </Title>
+                )}
+              </div>
+
+              <div style={{ marginBottom: '16px' }}>
+                <Text style={{ color: '#9ca3af', fontSize: '14px' }}>Email</Text>
+                <div style={{ display: 'flex', alignItems: 'center', marginTop: '4px' }}>
+                  <MailOutlined style={{ color: '#9ca3af', marginRight: '8px' }} />
+                  <Text style={{ color: '#ffffff' }}>{user.email}</Text>
+                </div>
+              </div>
+
+              <div style={{ marginBottom: '24px' }}>
+                <Text style={{ color: '#9ca3af', fontSize: '14px' }}>Дата регистрации</Text>
+                <Text style={{ color: '#ffffff', display: 'block', marginTop: '4px' }}>
+                  {new Date(user.created_at).toLocaleDateString('ru-RU')}
+                </Text>
+              </div>
+
+              <div>
+                {isEditing ? (
+                  <Space>
+                    <Button
+                      type="primary"
+                      icon={<SaveOutlined />}
+                      onClick={handleSave}
+                      loading={loading}
+                      style={{
+                        background: '#00ff88',
+                        borderColor: '#00ff88',
+                        color: '#000',
+                      }}
+                    >
+                      Сохранить
+                    </Button>
+                    <Button onClick={handleCancel}>
+                      Отмена
+                    </Button>
+                  </Space>
+                ) : (
+                  <Button
+                    type="primary"
+                    icon={<EditOutlined />}
+                    onClick={() => setIsEditing(true)}
+                    style={{
+                      background: '#00ff88',
+                      borderColor: '#00ff88',
+                      color: '#000',
+                    }}
+                  >
+                    Редактировать
+                  </Button>
+                )}
+              </div>
+            </div>
+          </Col>
+        </Row>
+      </Card>
 
       {/* Статистика */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-        <div className="card text-center">
-          <div className="text-xl md:text-2xl font-bold text-green-400 mb-2">{stats.total_products}</div>
-          <div className="text-gray-400 text-sm md:text-base">Всего товаров</div>
-        </div>
-        <div className="card text-center">
-          <div className="text-xl md:text-2xl font-bold text-blue-400 mb-2">{stats.active_products}</div>
-          <div className="text-gray-400 text-sm md:text-base">Активных</div>
-        </div>
-        <div className="card text-center">
-          <div className="text-xl md:text-2xl font-bold text-purple-400 mb-2">{stats.sold_products}</div>
-          <div className="text-gray-400 text-sm md:text-base">Проданных</div>
-        </div>
-        <div className="card text-center">
-          <div className="text-xl md:text-2xl font-bold text-yellow-400 mb-2">{stats.total_views}</div>
-          <div className="text-gray-400 text-sm md:text-base">Просмотров</div>
-        </div>
-      </div>
+      <Row gutter={[16, 16]} style={{ marginBottom: '32px' }}>
+        <Col xs={12} sm={6}>
+          <Card
+            style={{
+              background: '#1a1a1a',
+              border: '1px solid #374151',
+              borderRadius: '12px',
+              textAlign: 'center',
+            }}
+            bodyStyle={{ padding: '24px' }}
+          >
+            <Statistic
+              title={<Text style={{ color: '#9ca3af' }}>Всего товаров</Text>}
+              value={stats.total_products}
+              valueStyle={{ color: '#00ff88' }}
+            />
+          </Card>
+        </Col>
+        <Col xs={12} sm={6}>
+          <Card
+            style={{
+              background: '#1a1a1a',
+              border: '1px solid #374151',
+              borderRadius: '12px',
+              textAlign: 'center',
+            }}
+            bodyStyle={{ padding: '24px' }}
+          >
+            <Statistic
+              title={<Text style={{ color: '#9ca3af' }}>Активных</Text>}
+              value={stats.active_products}
+              valueStyle={{ color: '#00ff88' }}
+            />
+          </Card>
+        </Col>
+        <Col xs={12} sm={6}>
+          <Card
+            style={{
+              background: '#1a1a1a',
+              border: '1px solid #374151',
+              borderRadius: '12px',
+              textAlign: 'center',
+            }}
+            bodyStyle={{ padding: '24px' }}
+          >
+            <Statistic
+              title={<Text style={{ color: '#9ca3af' }}>Проданных</Text>}
+              value={stats.sold_products}
+              valueStyle={{ color: '#00ff88' }}
+            />
+          </Card>
+        </Col>
+        <Col xs={12} sm={6}>
+          <Card
+            style={{
+              background: '#1a1a1a',
+              border: '1px solid #374151',
+              borderRadius: '12px',
+              textAlign: 'center',
+            }}
+            bodyStyle={{ padding: '24px' }}
+          >
+            <Statistic
+              title={<Text style={{ color: '#9ca3af' }}>Просмотров</Text>}
+              value={stats.total_views}
+              valueStyle={{ color: '#00ff88' }}
+            />
+          </Card>
+        </Col>
+      </Row>
 
       {/* Мои товары */}
-      <div className="card">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold text-white">Мои товары</h2>
-          <Link to="/create" className="btn btn-primary">
-            <Plus className="w-4 h-4 mr-2" />
-            Добавить товар
-          </Link>
+      <Card
+        style={{
+          background: '#1a1a1a',
+          border: '1px solid #374151',
+          borderRadius: '16px',
+          marginBottom: '32px',
+        }}
+        bodyStyle={{ padding: '24px' }}
+      >
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+          <Title level={3} style={{ color: '#ffffff', margin: 0 }}>
+            Мои товары
+          </Title>
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            style={{
+              background: '#00ff88',
+              borderColor: '#00ff88',
+              color: '#000',
+            }}
+          >
+            <Link to="/create" style={{ color: '#000' }}>Добавить товар</Link>
+          </Button>
         </div>
 
         {productsLoading ? (
-          <div className="text-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-400 mx-auto mb-4"></div>
-            <p className="text-gray-400">Загрузка товаров...</p>
+          <div style={{ textAlign: 'center', padding: '32px' }}>
+            <Spin size="large" />
           </div>
         ) : products.length === 0 ? (
-          <div className="text-center py-8">
-            <Package className="w-16 h-16 text-gray-500 mx-auto mb-4" />
-            <p className="text-gray-400 text-lg mb-4">У вас пока нет товаров</p>
-            <Link to="/create" className="btn btn-primary">
-              <Plus className="w-4 h-4 mr-2" />
-              Создать первый товар
-            </Link>
-          </div>
+          <Empty description="У вас пока нет товаров" />
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <Row gutter={[16, 16]}>
             {products.map((product) => (
-              <div key={product.id} className="card group">
-                {/* Изображение */}
-                <div className="aspect-square bg-gray-800 rounded-lg mb-4 overflow-hidden">
-                  {product.images.length > 0 ? (
-                    <img
-                      src={product.images[0]}
-                      alt={product.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-gray-500">
-                      <Package className="w-12 h-12" />
+              <Col xs={24} sm={12} lg={8} key={product.id}>
+                <Card
+                  hoverable
+                  style={{
+                    background: '#2a2a2a',
+                    border: '1px solid #374151',
+                    borderRadius: '12px',
+                    height: '100%',
+                  }}
+                  bodyStyle={{ padding: '16px' }}
+                  cover={
+                    <div style={{ height: '150px', overflow: 'hidden' }}>
+                      {product.images && product.images.length > 0 ? (
+                        <img
+                          alt={product.title}
+                          src={product.images[0]}
+                          style={{
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'cover',
+                          }}
+                        />
+                      ) : (
+                        <div style={{
+                          width: '100%',
+                          height: '100%',
+                          background: '#1a1a1a',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          color: '#9ca3af',
+                        }}>
+                          <InboxOutlined style={{ fontSize: '32px' }} />
+                        </div>
+                      )}
                     </div>
-                  )}
-                </div>
-
-                {/* Информация */}
-                <div className="space-y-3">
-                  <div>
-                    <h3 className="text-lg font-semibold text-white line-clamp-2">
+                  }
+                >
+                  <div style={{ marginBottom: '12px' }}>
+                    <Title level={5} style={{ color: '#ffffff', margin: 0, fontSize: '14px' }}>
                       {product.title}
-                    </h3>
-                    <p className="text-sm text-gray-400">
-                      {product.category} • {getConditionText(product.condition)}
-                    </p>
+                    </Title>
+                    <Text style={{ color: '#9ca3af', fontSize: '12px' }}>
+                      {product.category}
+                    </Text>
                   </div>
 
-                  <div className="flex items-center justify-between">
-                    <span className="text-xl font-bold text-green-400">
+                  <div style={{ marginBottom: '12px' }}>
+                    <Tag color={getConditionColor(product.condition)}>
+                      {getConditionText(product.condition)}
+                    </Tag>
+                  </div>
+
+                  <div style={{ marginBottom: '16px' }}>
+                    <Text style={{ fontSize: '16px', fontWeight: 'bold', color: '#00ff88' }}>
                       {formatPrice(product.price)}
-                    </span>
-                    <div className={`px-2 py-1 rounded text-xs font-medium ${
-                      product.is_sold 
-                        ? 'bg-red-500/20 text-red-400' 
-                        : product.is_active 
-                          ? 'bg-green-500/20 text-green-400'
-                          : 'bg-gray-500/20 text-gray-400'
-                    }`}>
-                      {product.is_sold ? 'Продано' : product.is_active ? 'Активно' : 'Скрыто'}
-                    </div>
+                    </Text>
                   </div>
 
-                  {/* Действия */}
-                  <div className="flex flex-col sm:flex-row gap-2 pt-2 border-t border-gray-600">
-                    <Link 
-                      to={`/product/${product.id}`}
-                      className="flex-1 btn btn-secondary text-center flex items-center justify-center"
-                      title="Просмотр товара"
-                    >
-                      <Eye className="w-4 h-4" />
-                    </Link>
-                    <div className="flex gap-2">
-                      <Link 
-                        to={`/edit/${product.id}`}
-                        className="btn btn-secondary text-blue-400 hover:text-blue-300 flex items-center justify-center"
-                        title="Редактировать товар"
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Space>
+                      <Button
+                        type="text"
+                        icon={<EyeOutlined />}
+                        size="small"
+                        style={{ color: '#ffffff' }}
                       >
-                        <Edit className="w-4 h-4" />
-                      </Link>
-                      <button
+                        <Link to={`/product/${product.id}`}>Просмотр</Link>
+                      </Button>
+                      <Button
+                        type="text"
+                        icon={<EditOutlined />}
+                        size="small"
+                        style={{ color: '#00ff88' }}
+                      >
+                        <Link to={`/edit/${product.id}`}>Редактировать</Link>
+                      </Button>
+                    </Space>
+                    
+                    <Space>
+                      <Button
+                        type="text"
+                        icon={product.is_active ? <EyeInvisibleOutlined /> : <EyeOutlined />}
+                        size="small"
+                        style={{ color: '#ffffff' }}
                         onClick={() => toggleProductStatus(product.id, product.is_active)}
-                        className="btn btn-secondary flex items-center justify-center"
-                        title={product.is_active ? 'Скрыть товар' : 'Показать товар'}
-                      >
-                        {product.is_active ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                      </button>
-                      <button
+                      />
+                      <Button
+                        type="text"
+                        icon={<DeleteOutlined />}
+                        size="small"
+                        style={{ color: '#ff4757' }}
                         onClick={() => deleteProduct(product.id)}
-                        className="btn btn-secondary text-red-400 hover:text-red-300 flex items-center justify-center"
-                        title="Удалить товар"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
+                      />
+                    </Space>
                   </div>
-                </div>
-              </div>
+                </Card>
+              </Col>
             ))}
-          </div>
+          </Row>
         )}
-      </div>
+      </Card>
 
       {/* Избранные товары */}
-      <div className="card">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold text-white">Избранное</h2>
-          <div className="text-sm text-gray-400">
+      <Card
+        style={{
+          background: '#1a1a1a',
+          border: '1px solid #374151',
+          borderRadius: '16px',
+        }}
+        bodyStyle={{ padding: '24px' }}
+      >
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+          <Title level={3} style={{ color: '#ffffff', margin: 0 }}>
+            Избранное
+          </Title>
+          <Text style={{ color: '#9ca3af' }}>
             {favorites.length} товаров
-          </div>
+          </Text>
         </div>
 
         {favoritesLoading ? (
-          <div className="text-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-400 mx-auto"></div>
-            <p className="text-gray-400 mt-2">Загрузка избранного...</p>
+          <div style={{ textAlign: 'center', padding: '32px' }}>
+            <Spin size="large" />
           </div>
         ) : favorites.length === 0 ? (
-          <div className="text-center py-8">
-            <Package className="w-12 h-12 text-gray-600 mx-auto mb-4" />
-            <p className="text-gray-400">У вас пока нет избранных товаров</p>
-            <p className="text-gray-500 text-sm mt-2">
-              Нажмите на сердечко у товара, чтобы добавить его в избранное
-            </p>
-          </div>
+          <Empty description="У вас пока нет избранных товаров" />
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <Row gutter={[16, 16]}>
             {favorites.map((favorite) => (
-              <div key={favorite.id} className="card group">
-                {/* Изображение */}
-                <div className="aspect-square bg-gray-800 rounded-lg mb-4 overflow-hidden">
-                  {favorite.products?.images && favorite.products.images.length > 0 ? (
-                    <img
-                      src={favorite.products.images[0]}
-                      alt={favorite.products.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <Package className="w-12 h-12 text-gray-600" />
+              <Col xs={24} sm={12} lg={8} key={favorite.id}>
+                <Card
+                  hoverable
+                  style={{
+                    background: '#2a2a2a',
+                    border: '1px solid #374151',
+                    borderRadius: '12px',
+                    height: '100%',
+                  }}
+                  bodyStyle={{ padding: '16px' }}
+                  cover={
+                    <div style={{ height: '150px', overflow: 'hidden' }}>
+                      {favorite.products?.images && favorite.products.images.length > 0 ? (
+                        <img
+                          alt={favorite.products.title}
+                          src={favorite.products.images[0]}
+                          style={{
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'cover',
+                          }}
+                        />
+                      ) : (
+                        <div style={{
+                          width: '100%',
+                          height: '100%',
+                          background: '#1a1a1a',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          color: '#9ca3af',
+                        }}>
+                          <InboxOutlined style={{ fontSize: '32px' }} />
+                        </div>
+                      )}
                     </div>
-                  )}
-                </div>
-
-                {/* Информация */}
-                <div className="space-y-3">
-                  <div>
-                    <h3 className="text-lg font-semibold text-white group-hover:text-green-400 transition-colors line-clamp-2">
+                  }
+                >
+                  <div style={{ marginBottom: '12px' }}>
+                    <Title level={5} style={{ color: '#ffffff', margin: 0, fontSize: '14px' }}>
                       {favorite.products?.title || 'Товар удален'}
-                    </h3>
-                    <p className="text-sm text-gray-400">
-                      {favorite.products?.category} • {favorite.products?.condition === 'new' ? 'Новый' : favorite.products?.condition === 'used' ? 'Б/У' : 'Восстановленный'}
-                    </p>
+                    </Title>
+                    <Text style={{ color: '#9ca3af', fontSize: '12px' }}>
+                      {favorite.products?.category} • {getConditionText(favorite.products?.condition || '')}
+                    </Text>
                   </div>
 
-                  <div className="flex items-center justify-between">
-                    <span className="text-xl font-bold text-green-400">
-                      {favorite.products?.price ? `${favorite.products.price.toLocaleString()} ₽` : 'Цена не указана'}
-                    </span>
-                    <button
+                  <div style={{ marginBottom: '16px' }}>
+                    <Text style={{ fontSize: '16px', fontWeight: 'bold', color: '#00ff88' }}>
+                      {favorite.products?.price ? formatPrice(favorite.products.price) : 'Цена не указана'}
+                    </Text>
+                  </div>
+
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Button
+                      type="text"
+                      icon={<HeartOutlined />}
+                      size="small"
+                      style={{ color: '#ff4757' }}
                       onClick={() => removeFromFavorites(favorite.id)}
-                      className="p-2 text-red-400 hover:text-red-300 transition-all duration-300 flex items-center justify-center"
-                      title="Удалить из избранного"
-                    >
-                      <Heart className="w-4 h-4 fill-current" />
-                    </button>
+                    />
+                    
+                    {favorite.products && (
+                      <Button
+                        type="primary"
+                        size="small"
+                        icon={<EyeOutlined />}
+                        style={{
+                          background: '#00ff88',
+                          borderColor: '#00ff88',
+                          color: '#000',
+                        }}
+                      >
+                        <Link to={`/product/${favorite.products.id}`} style={{ color: '#000' }}>
+                          Перейти к товару
+                        </Link>
+                      </Button>
+                    )}
                   </div>
-                </div>
-
-                {/* Ссылка на товар */}
-                {favorite.products && (
-                  <div className="pt-2 border-t border-gray-600">
-                    <Link
-                      to={`/product/${favorite.products.id}`}
-                      className="btn btn-secondary w-full text-center"
-                    >
-                      <Eye className="w-4 h-4 mr-2" />
-                      Перейти к товару
-                    </Link>
-                  </div>
-                )}
-              </div>
+                </Card>
+              </Col>
             ))}
-          </div>
+          </Row>
         )}
-      </div>
+      </Card>
     </div>
   )
 }

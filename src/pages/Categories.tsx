@@ -1,7 +1,21 @@
 import React, { useState, useEffect } from 'react'
+import { Card, Row, Col, Typography, Button, Spin, Empty, message } from 'antd'
+import { 
+  BellOutlined, 
+  BellFilled, 
+  DesktopOutlined, 
+  HddOutlined, 
+  MonitorOutlined, 
+  ThunderboltOutlined, 
+  DatabaseOutlined, 
+  FireOutlined, 
+  MoreOutlined, 
+  AudioOutlined 
+} from '@ant-design/icons'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase, CATEGORIES } from '../lib/supabase'
-import { Bell, BellOff, Cpu, HardDrive, Monitor, Zap, Database, Thermometer, Mouse, Headphones } from 'lucide-react'
+
+const { Title, Text } = Typography
 
 // Типы для подписок
 interface Subscription {
@@ -28,209 +42,259 @@ const Categories: React.FC = () => {
     if (!user) return
 
     try {
+      setLoading(true)
       const { data, error } = await supabase
         .from('subscriptions')
         .select('*')
         .eq('user_id', user.id)
 
       if (error) throw error
+
       setSubscriptions(data || [])
     } catch (error) {
-      console.error('Categories: Error fetching subscriptions:', error)
+      message.error('Ошибка загрузки подписок')
     } finally {
       setLoading(false)
     }
   }
 
   const toggleSubscription = async (category: string) => {
-    if (!user) return
+    if (!user) {
+      message.warning('Войдите в систему, чтобы подписываться на категории')
+      return
+    }
 
-    const isSubscribed = subscriptions.some(sub => sub.category === category)
+    const existingSubscription = subscriptions.find(sub => sub.category === category)
 
     try {
-      if (isSubscribed) {
-        // Отписаться
+      if (existingSubscription) {
+        // Отписываемся
         const { error } = await supabase
           .from('subscriptions')
           .delete()
-          .eq('user_id', user.id)
-          .eq('category', category)
+          .eq('id', existingSubscription.id)
 
         if (error) throw error
 
-        setSubscriptions(prev => prev.filter(sub => sub.category !== category))
+        setSubscriptions(prev => prev.filter(sub => sub.id !== existingSubscription.id))
+        message.success(`Отписались от категории "${category}"`)
       } else {
-        // Подписаться
+        // Подписываемся
         const { error } = await supabase
           .from('subscriptions')
-          .insert([{
-            user_id: user.id,
-            category: category
-          }])
+          .insert([{ user_id: user.id, category }])
 
         if (error) throw error
 
-        setSubscriptions(prev => [...prev, {
-          id: '',
+        const newSubscription = {
+          id: Date.now().toString(),
           user_id: user.id,
-          category: category,
+          category,
           created_at: new Date().toISOString()
-        }])
+        }
+
+        setSubscriptions(prev => [...prev, newSubscription])
+        message.success(`Подписались на категорию "${category}"`)
       }
     } catch (error) {
-      console.error('Categories: Error toggling subscription:', error)
+      message.error('Ошибка изменения подписки')
     }
   }
 
   const getCategoryIcon = (category: string) => {
     switch (category) {
-      case 'Процессоры': return <Cpu className="w-8 h-8" />
-      case 'Видеокарты': return <HardDrive className="w-8 h-8" />
-      case 'Материнские платы': return <Monitor className="w-8 h-8" />
-      case 'Оперативная память': return <Database className="w-8 h-8" />
-      case 'Накопители': return <HardDrive className="w-8 h-8" />
-      case 'Блоки питания': return <Zap className="w-8 h-8" />
-      case 'Корпуса': return <Monitor className="w-8 h-8" />
-      case 'Охлаждение': return <Thermometer className="w-8 h-8" />
-      case 'Периферия': return <Mouse className="w-8 h-8" />
-      case 'Другое': return <Headphones className="w-8 h-8" />
-      default: return <Monitor className="w-8 h-8" />
+      case 'Процессоры':
+        return <DesktopOutlined style={{ fontSize: '32px', color: '#00ff88' }} />
+      case 'Видеокарты':
+        return <MonitorOutlined style={{ fontSize: '32px', color: '#00ff88' }} />
+      case 'Материнские платы':
+        return <HddOutlined style={{ fontSize: '32px', color: '#00ff88' }} />
+      case 'Оперативная память':
+        return <DatabaseOutlined style={{ fontSize: '32px', color: '#00ff88' }} />
+      case 'Накопители':
+        return <HddOutlined style={{ fontSize: '32px', color: '#00ff88' }} />
+      case 'Блоки питания':
+        return <ThunderboltOutlined style={{ fontSize: '32px', color: '#00ff88' }} />
+      case 'Корпуса':
+        return <DesktopOutlined style={{ fontSize: '32px', color: '#00ff88' }} />
+      case 'Охлаждение':
+        return <FireOutlined style={{ fontSize: '32px', color: '#00ff88' }} />
+      case 'Периферия':
+        return <MoreOutlined style={{ fontSize: '32px', color: '#00ff88' }} />
+      case 'Другое':
+        return <AudioOutlined style={{ fontSize: '32px', color: '#00ff88' }} />
+      default:
+        return <DesktopOutlined style={{ fontSize: '32px', color: '#00ff88' }} />
     }
   }
 
   const getCategoryDescription = (category: string) => {
     switch (category) {
-      case 'Процессоры': return 'Intel, AMD - все процессоры для вашей сборки'
-      case 'Видеокарты': return 'RTX, GTX, RX - игровые и профессиональные карты'
-      case 'Материнские платы': return 'Основа вашего ПК - от бюджетных до топовых'
-      case 'Оперативная память': return 'DDR4, DDR5 - быстрая память для любых задач'
-      case 'Накопители': return 'SSD, HDD, NVMe - хранилища всех типов'
-      case 'Блоки питания': return 'Надежные БП для стабильной работы системы'
-      case 'Корпуса': return 'Стильные корпуса для любых форм-факторов'
-      case 'Охлаждение': return 'Кулеры, радиаторы, термопаста'
-      case 'Периферия': return 'Клавиатуры, мыши, мониторы и аксессуары'
-      case 'Другое': return 'Все остальные комплектующие и аксессуары'
-      default: return 'Комплектующие для ПК'
+      case 'Процессоры':
+        return 'Intel, AMD - все процессоры для вашей сборки'
+      case 'Видеокарты':
+        return 'RTX, GTX, RX - мощные видеокарты'
+      case 'Материнские платы':
+        return 'Основа вашего ПК - материнские платы'
+      case 'Оперативная память':
+        return 'DDR4, DDR5 - быстрая память'
+      case 'Накопители':
+        return 'SSD, HDD - хранилища данных'
+      case 'Блоки питания':
+        return 'Надежные источники питания'
+      case 'Корпуса':
+        return 'Стильные корпуса для ПК'
+      case 'Охлаждение':
+        return 'Кулеры, радиаторы, термопаста'
+      case 'Периферия':
+        return 'Мыши, клавиатуры, мониторы'
+      case 'Другое':
+        return 'Прочие комплектующие'
+      default:
+        return 'Комплектующие для ПК'
     }
   }
 
-  if (loading) {
+  const isSubscribed = (category: string) => {
+    return subscriptions.some(sub => sub.category === category)
+  }
+
+  if (!user) {
     return (
-      <div className="text-center py-16">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-neon mx-auto mb-4"></div>
-        <p className="text-text-secondary">Загрузка категорий...</p>
+      <div style={{ padding: '24px 0' }}>
+        <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+          <Title level={2} style={{ color: '#ffffff', marginBottom: '8px' }}>
+            Категории товаров
+          </Title>
+          <Text style={{ color: '#9ca3af', fontSize: '16px' }}>
+            Подписывайтесь на интересующие вас категории
+          </Text>
+        </div>
+        
+        <Empty 
+          description="Войдите в систему, чтобы подписываться на категории"
+          style={{ margin: '64px 0' }}
+        />
       </div>
     )
   }
 
   return (
-    <div className="space-y-8">
-      {/* Заголовок */}
-      <div className="text-center">
-        <h1 className="text-3xl font-display font-bold text-gradient mb-2">
-          Категории железа
-        </h1>
-        <p className="text-text-secondary">
-          Подписывайся на интересующие категории и получай уведомления о новых товарах
-        </p>
+    <div style={{ padding: '24px 0' }}>
+      <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+        <Title level={2} style={{ color: '#ffffff', marginBottom: '8px' }}>
+          Категории товаров
+        </Title>
+        <Text style={{ color: '#9ca3af', fontSize: '16px' }}>
+          Подписывайтесь на интересующие вас категории и получайте уведомления о новых товарах
+        </Text>
       </div>
 
-      {/* Информация о подписках */}
-      {user && (
-        <div className="card bg-gradient-to-r from-primary-neon/10 to-accent-neon/10 border-primary-neon/20">
-          <div className="flex items-center space-x-3">
-            <Bell className="w-6 h-6 text-primary-neon" />
-            <div>
-              <h3 className="text-lg font-semibold text-text-primary">
-                Управление подписками
-              </h3>
-              <p className="text-text-secondary">
-                Подписан на {subscriptions.length} категорий. Новые товары будут отображаться в ленте.
-              </p>
-            </div>
-          </div>
+      {loading ? (
+        <div style={{ textAlign: 'center', padding: '64px 0' }}>
+          <Spin size="large" />
         </div>
-      )}
-
-      {/* Сетка категорий */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {CATEGORIES.map((category) => {
-          const isSubscribed = subscriptions.some(sub => sub.category === category)
-          
-          return (
-            <div key={category} className="card group hover:scale-105 transition-transform duration-300">
-              <div className="space-y-4">
-                {/* Иконка и название */}
-                <div className="flex items-center justify-between">
-                  <div className="text-primary-neon group-hover:text-accent-neon transition-colors">
+      ) : (
+        <Row gutter={[24, 24]}>
+          {CATEGORIES.map((category) => (
+            <Col xs={24} sm={12} lg={8} xl={6} key={category}>
+              <Card
+                hoverable
+                style={{
+                  background: '#1a1a1a',
+                  border: '1px solid #374151',
+                  borderRadius: '16px',
+                  height: '100%',
+                  position: 'relative',
+                }}
+                bodyStyle={{ 
+                  padding: '24px',
+                  textAlign: 'center',
+                  height: '100%',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between',
+                }}
+              >
+                <div>
+                  <div style={{ marginBottom: '16px' }}>
                     {getCategoryIcon(category)}
                   </div>
                   
-                  {user && (
-                    <button
-                      onClick={() => toggleSubscription(category)}
-                      className={`p-2 rounded-lg transition-colors ${
-                        isSubscribed
-                          ? 'bg-primary-neon text-bg-dark hover:bg-accent-neon'
-                          : 'bg-bg-card-hover text-text-muted hover:text-primary-neon hover:bg-primary-neon/10'
-                      }`}
-                      title={isSubscribed ? 'Отписаться' : 'Подписаться'}
-                    >
-                      {isSubscribed ? <BellOff className="w-4 h-4" /> : <Bell className="w-4 h-4" />}
-                    </button>
-                  )}
-                </div>
-
-                {/* Название и описание */}
-                <div>
-                  <h3 className="text-xl font-semibold text-text-primary mb-2">
+                  <Title level={4} style={{ color: '#ffffff', marginBottom: '8px' }}>
                     {category}
-                  </h3>
-                  <p className="text-text-secondary text-sm">
+                  </Title>
+                  
+                  <Text style={{ color: '#9ca3af', fontSize: '14px' }}>
                     {getCategoryDescription(category)}
-                  </p>
+                  </Text>
                 </div>
 
-                {/* Статус подписки */}
-                {user && (
-                  <div className="pt-2 border-t border-border-subtle">
-                    <div className={`flex items-center space-x-2 text-sm ${
-                      isSubscribed ? 'text-primary-neon' : 'text-text-muted'
-                    }`}>
-                      <Bell className="w-4 h-4" />
-                      <span>
-                        {isSubscribed ? 'Подписан' : 'Не подписан'}
-                      </span>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          )
-        })}
-      </div>
+                <div style={{ marginTop: '16px' }}>
+                  <Button
+                    type={isSubscribed(category) ? 'default' : 'primary'}
+                    icon={isSubscribed(category) ? <BellFilled /> : <BellOutlined />}
+                    onClick={() => toggleSubscription(category)}
+                    style={{
+                      width: '100%',
+                      background: isSubscribed(category) ? 'transparent' : '#00ff88',
+                      borderColor: isSubscribed(category) ? '#374151' : '#00ff88',
+                      color: isSubscribed(category) ? '#ffffff' : '#000',
+                    }}
+                  >
+                    {isSubscribed(category) ? 'Отписаться' : 'Подписаться'}
+                  </Button>
+                </div>
 
-      {/* Информация для неавторизованных */}
-      {!user && (
-        <div className="text-center py-8">
-          <div className="card max-w-md mx-auto bg-gradient-to-r from-secondary-neon/10 to-warning-neon/10 border-secondary-neon/20">
-            <Bell className="w-12 h-12 text-secondary-neon mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-text-primary mb-2">
-              Войдите в систему
-            </h3>
-            <p className="text-text-secondary mb-4">
-              Чтобы подписываться на категории и получать уведомления о новых товарах
-            </p>
-            <div className="flex space-x-4 justify-center">
-              <a href="/login" className="btn btn-primary">
-                Войти
-              </a>
-              <a href="/register" className="btn btn-secondary">
-                Регистрация
-              </a>
-            </div>
+                {isSubscribed(category) && (
+                  <div style={{
+                    position: 'absolute',
+                    top: '12px',
+                    right: '12px',
+                    background: '#00ff88',
+                    borderRadius: '50%',
+                    width: '8px',
+                    height: '8px',
+                  }} />
+                )}
+              </Card>
+            </Col>
+          ))}
+        </Row>
+      )}
+
+      {subscriptions.length > 0 && (
+        <Card
+          style={{
+            background: '#1a1a1a',
+            border: '1px solid #374151',
+            borderRadius: '16px',
+            marginTop: '32px',
+          }}
+          bodyStyle={{ padding: '24px' }}
+        >
+          <Title level={3} style={{ color: '#ffffff', marginBottom: '16px' }}>
+            Ваши подписки ({subscriptions.length})
+          </Title>
+          
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+            {subscriptions.map((subscription) => (
+              <Button
+                key={subscription.id}
+                type="default"
+                icon={<BellFilled />}
+                onClick={() => toggleSubscription(subscription.category)}
+                style={{
+                  background: 'transparent',
+                  borderColor: '#00ff88',
+                  color: '#00ff88',
+                }}
+              >
+                {subscription.category}
+              </Button>
+            ))}
           </div>
-        </div>
+        </Card>
       )}
     </div>
   )
