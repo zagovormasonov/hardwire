@@ -1,8 +1,33 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import { 
+  Card, 
+  Form, 
+  Input, 
+  Select, 
+  InputNumber, 
+  Button, 
+  Upload, 
+  Typography, 
+  Space, 
+  Row, 
+  Col,
+  message,
+  Spin,
+  Image
+} from 'antd'
+import { 
+  ArrowLeftOutlined, 
+  UploadOutlined, 
+  DeleteOutlined, 
+  SaveOutlined 
+} from '@ant-design/icons'
 import { supabase, CATEGORIES } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
-import { ArrowLeft, Upload, X, Save } from 'lucide-react'
+
+const { Title, Text } = Typography
+const { TextArea } = Input
+const { Option } = Select
 
 // Типы для товаров
 interface Product {
@@ -24,20 +49,11 @@ const EditProduct: React.FC = () => {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { user } = useAuth()
+  const [form] = Form.useForm()
   
   const [product, setProduct] = useState<Product | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
-  const [error, setError] = useState('')
-  
-  const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    price: '',
-    category: '',
-    condition: 'new' as 'new' | 'used' | 'refurbished'
-  })
-  
   const [images, setImages] = useState<string[]>([])
   const [uploadingImages, setUploadingImages] = useState(false)
 
@@ -49,6 +65,7 @@ const EditProduct: React.FC = () => {
 
   const fetchProduct = async () => {
     try {
+      setLoading(true)
       const { data, error } = await supabase
         .from('products')
         .select('*')
@@ -57,66 +74,77 @@ const EditProduct: React.FC = () => {
 
       if (error) throw error
 
-      // Проверяем, что товар принадлежит текущему пользователю
+      if (!data) {
+        message.error('Товар не найден')
+        navigate('/profile')
+        return
+      }
+
       if (data.seller_id !== user?.id) {
-        setError('У вас нет прав для редактирования этого товара')
+        message.error('У вас нет прав для редактирования этого товара')
+        navigate('/profile')
         return
       }
 
       setProduct(data)
-      setFormData({
+      setImages(data.images || [])
+      
+      // Заполняем форму данными товара
+      form.setFieldsValue({
         title: data.title,
         description: data.description,
-        price: data.price.toString(),
+        price: data.price,
         category: data.category,
         condition: data.condition
       })
-      setImages(data.images || [])
-    } catch (error: any) {
-      console.error('EditProduct: Error fetching product:', error)
-      setError('Товар не найден')
+    } catch (error) {
+      message.error('Ошибка загрузки товара')
+      navigate('/profile')
     } finally {
       setLoading(false)
     }
   }
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }))
-  }
+  const handleImageUpload = async (file: any) => {
+    if (!user) return false
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files
-    if (!files || !user) return
+    if (file.size > 5 * 1024 * 1024) {
+      message.error('Размер файла не должен превышать 5MB')
+      return false
+    }
+
+    if (!file.type.startsWith('image/')) {
+      message.error('Выберите изображение (JPG, PNG, GIF)')
+      return false
+    }
+
+    if (images.length >= 5) {
+      message.error('Максимум 5 изображений')
+      return false
+    }
 
     setUploadingImages(true)
     try {
-      const uploadPromises = Array.from(files).map(async (file) => {
-        const fileExt = file.name.split('.').pop()
-        const fileName = `${user.id}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${fileExt}`
-        const filePath = `products/${fileName}`
+      const fileExt = file.name.split('.').pop()
+      const fileName = `${Math.random()}.${fileExt}`
+      const filePath = `products/${fileName}`
 
-        const { error: uploadError } = await supabase.storage
-          .from('product-images')
-          .upload(filePath, file)
+      const { error: uploadError } = await supabase.storage
+        .from('product-images')
+        .upload(filePath, file)
 
-        if (uploadError) throw uploadError
+      if (uploadError) throw uploadError
 
-        const { data } = supabase.storage
-          .from('product-images')
-          .getPublicUrl(filePath)
+      const { data } = supabase.storage
+        .from('product-images')
+        .getPublicUrl(filePath)
 
-        return data.publicUrl
-      })
-
-      const newImageUrls = await Promise.all(uploadPromises)
-      setImages(prev => [...prev, ...newImageUrls])
-    } catch (error) {
-      console.error('EditProduct: Image upload error:', error)
-      setError('Ошибка загрузки изображений')
+      setImages(prev => [...prev, data.publicUrl])
+      message.success('Изображение загружено')
+      return false // Предотвращаем автоматическую загрузку
+    } catch (error: any) {
+      message.error('Ошибка загрузки изображения')
+      return false
     } finally {
       setUploadingImages(false)
     }
@@ -126,57 +154,38 @@ const EditProduct: React.FC = () => {
     setImages(prev => prev.filter((_, i) => i !== index))
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    
-    if (!formData.title.trim()) {
-      setError('Введите название товара')
+  const onFinish = async (values: any) => {
+    if (!user || !product) {
+      message.error('Необходимо войти в систему')
       return
     }
-    
-    if (!formData.description.trim()) {
-      setError('Введите описание товара')
-      return
-    }
-    
-    if (!formData.price || parseFloat(formData.price) <= 0) {
-      setError('Введите корректную цену')
-      return
-    }
-    
-    if (!formData.category) {
-      setError('Выберите категорию')
-      return
-    }
-    
+
     if (images.length === 0) {
-      setError('Добавьте хотя бы одно изображение')
+      message.error('Добавьте хотя бы одно изображение')
       return
     }
 
     setSaving(true)
-    setError('')
-
     try {
       const { error } = await supabase
         .from('products')
         .update({
-          title: formData.title.trim(),
-          description: formData.description.trim(),
-          price: parseFloat(formData.price),
-          category: formData.category,
-          condition: formData.condition,
+          title: values.title,
+          description: values.description,
+          price: values.price,
+          category: values.category,
+          condition: values.condition,
           images: images,
           updated_at: new Date().toISOString()
         })
-        .eq('id', id)
+        .eq('id', product.id)
 
       if (error) throw error
 
+      message.success('Товар успешно обновлен!')
       navigate('/profile')
     } catch (error: any) {
-      console.error('EditProduct: Update error:', error)
-      setError(error.message || 'Ошибка обновления товара')
+      message.error('Ошибка обновления товара')
     } finally {
       setSaving(false)
     }
@@ -184,225 +193,284 @@ const EditProduct: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="text-center py-16">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-400 mx-auto mb-4"></div>
-        <p className="text-gray-300">Загрузка товара...</p>
+      <div style={{ textAlign: 'center', padding: '64px 0' }}>
+        <Spin size="large" />
       </div>
     )
   }
 
-  if (error && !product) {
+  if (!product) {
     return (
-      <div className="text-center py-16">
-        <p className="text-red-400 text-lg mb-4">{error}</p>
-        <button onClick={() => navigate('/profile')} className="btn btn-primary">
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Вернуться к профилю
-        </button>
+      <div style={{ padding: '24px 0' }}>
+        <div style={{ textAlign: 'center', padding: '64px 0' }}>
+          <Title level={2} style={{ color: '#ffffff' }}>
+            Товар не найден
+          </Title>
+          <Text style={{ color: '#9ca3af' }}>
+            Возможно, товар был удален или у вас нет прав для его редактирования
+          </Text>
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8">
-      {/* Навигация */}
-      <div className="flex items-center space-x-4">
-        <button onClick={() => navigate('/profile')} className="btn btn-secondary">
-          <ArrowLeft className="w-4 h-4 mr-2" />
+    <div style={{ padding: '24px 0' }}>
+      <div style={{ marginBottom: '32px' }}>
+        <Button
+          icon={<ArrowLeftOutlined />}
+          onClick={() => navigate('/profile')}
+          style={{ marginBottom: '16px' }}
+        >
           Назад к профилю
-        </button>
-        <span className="text-gray-400">/</span>
-        <span className="text-gray-300">Редактирование товара</span>
-      </div>
-
-      {/* Заголовок */}
-      <div className="text-center">
-        <h1 className="text-3xl font-bold text-white mb-2">
-          Редактирование товара
-        </h1>
-        <p className="text-gray-400">
+        </Button>
+        
+        <Title level={2} style={{ color: '#ffffff', margin: 0 }}>
+          Редактировать товар
+        </Title>
+        <Text style={{ color: '#9ca3af' }}>
           Измените информацию о вашем товаре
-        </p>
+        </Text>
       </div>
 
-      {/* Форма */}
-      <form onSubmit={handleSubmit} className="card space-y-6">
-        {/* Название */}
-        <div>
-          <label className="block text-sm font-medium text-white mb-2">
-            Название товара *
-          </label>
-          <input
-            type="text"
-            name="title"
-            value={formData.title}
-            onChange={handleChange}
-            className="input w-full"
-            placeholder="Введите название товара"
-            required
-          />
-        </div>
-
-        {/* Описание */}
-        <div>
-          <label className="block text-sm font-medium text-white mb-2">
-            Описание *
-          </label>
-          <textarea
-            name="description"
-            value={formData.description}
-            onChange={handleChange}
-            className="input w-full h-32 resize-none"
-            placeholder="Подробно опишите товар..."
-            required
-          />
-        </div>
-
-        {/* Цена и категория */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-          <div>
-            <label className="block text-sm font-medium text-white mb-2">
-              Цена (₽) *
-            </label>
-            <input
-              type="number"
-              name="price"
-              value={formData.price}
-              onChange={handleChange}
-              className="input w-full"
-              placeholder="0"
-              min="0"
-              step="0.01"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-white mb-2">
-              Категория *
-            </label>
-            <select
-              name="category"
-              value={formData.category}
-              onChange={handleChange}
-              className="input w-full"
-              required
+      <Row gutter={[24, 24]}>
+        <Col xs={24} lg={16}>
+          <Card
+            style={{
+              background: '#1a1a1a',
+              border: '1px solid #374151',
+              borderRadius: '16px',
+            }}
+            bodyStyle={{ padding: '32px' }}
+          >
+            <Form
+              form={form}
+              layout="vertical"
+              onFinish={onFinish}
+              size="large"
             >
-              <option value="">Выберите категорию</option>
-              {CATEGORIES.map(category => (
-                <option key={category} value={category}>
-                  {category}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-
-        {/* Состояние */}
-        <div>
-          <label className="block text-sm font-medium text-white mb-2">
-            Состояние товара
-          </label>
-          <div className="grid grid-cols-3 gap-4">
-            {[
-              { value: 'new', label: 'Новое' },
-              { value: 'used', label: 'Б/У' },
-              { value: 'refurbished', label: 'Восстановленное' }
-            ].map(option => (
-              <label key={option.value} className="flex items-center space-x-2 cursor-pointer">
-                <input
-                  type="radio"
-                  name="condition"
-                  value={option.value}
-                  checked={formData.condition === option.value}
-                  onChange={handleChange}
-                  className="w-4 h-4 text-green-400 bg-gray-800 border-gray-600 focus:ring-green-400 focus:ring-2"
+              <Form.Item
+                name="title"
+                label={<Text style={{ color: '#ffffff' }}>Название товара</Text>}
+                rules={[
+                  { required: true, message: 'Введите название товара' },
+                  { min: 3, message: 'Название должно содержать минимум 3 символа' }
+                ]}
+              >
+                <Input
+                  placeholder="Например: RTX 3070 Gaming X Trio"
+                  style={{
+                    background: '#2a2a2a',
+                    border: '1px solid #374151',
+                    borderRadius: '8px',
+                  }}
                 />
-                <span className="text-gray-300">{option.label}</span>
-              </label>
-            ))}
-          </div>
-        </div>
+              </Form.Item>
 
-        {/* Изображения */}
-        <div>
-          <label className="block text-sm font-medium text-white mb-2">
-            Изображения *
-          </label>
-          
-          {/* Загрузка новых изображений */}
-          <div className="mb-4">
-            <input
-              type="file"
+              <Form.Item
+                name="description"
+                label={<Text style={{ color: '#ffffff' }}>Описание</Text>}
+                rules={[
+                  { required: true, message: 'Введите описание товара' },
+                  { min: 10, message: 'Описание должно содержать минимум 10 символов' }
+                ]}
+              >
+                <TextArea
+                  rows={4}
+                  placeholder="Подробно опишите состояние товара, его характеристики и особенности..."
+                  style={{
+                    background: '#2a2a2a',
+                    border: '1px solid #374151',
+                    borderRadius: '8px',
+                  }}
+                />
+              </Form.Item>
+
+              <Row gutter={16}>
+                <Col xs={24} sm={12}>
+                  <Form.Item
+                    name="price"
+                    label={<Text style={{ color: '#ffffff' }}>Цена (₽)</Text>}
+                    rules={[
+                      { required: true, message: 'Введите цену' },
+                      { type: 'number', min: 1, message: 'Цена должна быть больше 0' }
+                    ]}
+                  >
+                    <InputNumber
+                      placeholder="50000"
+                      style={{
+                        width: '100%',
+                        background: '#2a2a2a',
+                        border: '1px solid #374151',
+                        borderRadius: '8px',
+                      }}
+                      formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ' ')}
+                      parser={(value) => value!.replace(/\s?/g, '')}
+                    />
+                  </Form.Item>
+                </Col>
+                
+                <Col xs={24} sm={12}>
+                  <Form.Item
+                    name="condition"
+                    label={<Text style={{ color: '#ffffff' }}>Состояние</Text>}
+                    rules={[{ required: true, message: 'Выберите состояние товара' }]}
+                  >
+                    <Select
+                      style={{
+                        background: '#2a2a2a',
+                        border: '1px solid #374151',
+                        borderRadius: '8px',
+                      }}
+                    >
+                      <Option value="new">Новый</Option>
+                      <Option value="used">Б/У</Option>
+                      <Option value="refurbished">Восстановленный</Option>
+                    </Select>
+                  </Form.Item>
+                </Col>
+              </Row>
+
+              <Form.Item
+                name="category"
+                label={<Text style={{ color: '#ffffff' }}>Категория</Text>}
+                rules={[{ required: true, message: 'Выберите категорию' }]}
+              >
+                <Select
+                  placeholder="Выберите категорию"
+                  style={{
+                    background: '#2a2a2a',
+                    border: '1px solid #374151',
+                    borderRadius: '8px',
+                  }}
+                >
+                  {CATEGORIES.map(category => (
+                    <Option key={category} value={category}>
+                      {category}
+                    </Option>
+                  ))}
+                </Select>
+              </Form.Item>
+
+              <Form.Item>
+                <Space>
+                  <Button
+                    type="primary"
+                    htmlType="submit"
+                    icon={<SaveOutlined />}
+                    loading={saving}
+                    style={{
+                      background: '#00ff88',
+                      borderColor: '#00ff88',
+                      color: '#000',
+                      height: '48px',
+                      padding: '0 32px',
+                      fontSize: '16px',
+                      fontWeight: 'bold',
+                    }}
+                  >
+                    Сохранить изменения
+                  </Button>
+                  
+                  <Button
+                    onClick={() => navigate('/profile')}
+                    style={{ height: '48px', padding: '0 32px' }}
+                  >
+                    Отмена
+                  </Button>
+                </Space>
+              </Form.Item>
+            </Form>
+          </Card>
+        </Col>
+
+        <Col xs={24} lg={8}>
+          <Card
+            style={{
+              background: '#1a1a1a',
+              border: '1px solid #374151',
+              borderRadius: '16px',
+            }}
+            bodyStyle={{ padding: '24px' }}
+          >
+            <Title level={4} style={{ color: '#ffffff', marginBottom: '16px' }}>
+              Изображения товара
+            </Title>
+            
+            <Text style={{ color: '#9ca3af', fontSize: '14px', marginBottom: '16px', display: 'block' }}>
+              Управляйте фотографиями вашего товара (максимум 5 изображений)
+            </Text>
+
+            <Upload
+              beforeUpload={handleImageUpload}
+              showUploadList={false}
               accept="image/*"
               multiple
-              onChange={handleImageUpload}
-              className="hidden"
-              id="image-upload"
-              disabled={uploadingImages}
-            />
-            <label
-              htmlFor="image-upload"
-              className="btn btn-secondary cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={images.length >= 5 || uploadingImages}
             >
-              {uploadingImages ? (
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-              ) : (
-                <Upload className="w-4 h-4 mr-2" />
-              )}
-              {uploadingImages ? 'Загрузка...' : 'Добавить изображения'}
-            </label>
-          </div>
+              <Button
+                icon={<UploadOutlined />}
+                loading={uploadingImages}
+                disabled={images.length >= 5}
+                style={{
+                  width: '100%',
+                  height: '48px',
+                  background: '#2a2a2a',
+                  border: '1px solid #374151',
+                  color: '#ffffff',
+                }}
+              >
+                {uploadingImages ? 'Загрузка...' : 'Добавить изображения'}
+              </Button>
+            </Upload>
 
-          {/* Список изображений */}
-          {images.length > 0 && (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4">
-              {images.map((image, index) => (
-                <div key={index} className="relative group">
-                  <img
-                    src={image}
-                    alt={`Изображение ${index + 1}`}
-                    className="w-full h-24 md:h-32 object-cover rounded-lg"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => removeImage(index)}
-                    className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                  >
-                    <X className="w-2 h-2 md:w-3 md:h-3" />
-                  </button>
+            {images.length > 0 && (
+              <div style={{ marginTop: '16px' }}>
+                <Text style={{ color: '#9ca3af', fontSize: '12px' }}>
+                  Загружено: {images.length}/5
+                </Text>
+                
+                <div style={{ marginTop: '12px' }}>
+                  {images.map((image, index) => (
+                    <div
+                      key={index}
+                      style={{
+                        position: 'relative',
+                        marginBottom: '8px',
+                        borderRadius: '8px',
+                        overflow: 'hidden',
+                      }}
+                    >
+                      <Image
+                        src={image}
+                        alt={`Upload ${index + 1}`}
+                        style={{
+                          width: '100%',
+                          height: '120px',
+                          objectFit: 'cover',
+                        }}
+                      />
+                      <Button
+                        type="text"
+                        icon={<DeleteOutlined />}
+                        size="small"
+                        style={{
+                          position: 'absolute',
+                          top: '4px',
+                          right: '4px',
+                          background: 'rgba(0, 0, 0, 0.7)',
+                          color: '#ffffff',
+                        }}
+                        onClick={() => removeImage(index)}
+                      />
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Ошибка */}
-        {error && (
-          <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3">
-            <p className="text-red-400 text-sm">{error}</p>
-          </div>
-        )}
-
-        {/* Кнопки */}
-        <div className="flex flex-col sm:flex-row gap-4">
-          <button
-            type="submit"
-            disabled={saving}
-            className="btn btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <Save className="w-4 h-4 mr-2" />
-            {saving ? 'Сохранение...' : 'Сохранить изменения'}
-          </button>
-          <button
-            type="button"
-            onClick={() => navigate('/profile')}
-            className="btn btn-secondary"
-          >
-            Отмена
-          </button>
-        </div>
-      </form>
+              </div>
+            )}
+          </Card>
+        </Col>
+      </Row>
     </div>
   )
 }
