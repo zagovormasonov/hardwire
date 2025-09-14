@@ -164,6 +164,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }
 
   const signUp = async (email: string, password: string, fullName: string) => {
+    console.log('AuthContext: Начинаем регистрацию пользователя:', email)
+    
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -174,7 +176,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       },
     })
 
-    if (error) throw error
+    if (error) {
+      console.error('AuthContext: Ошибка регистрации:', error)
+      throw error
+    }
+
+    console.log('AuthContext: Регистрация успешна, создаем профиль')
 
     if (data.user) {
       // Создаем профиль пользователя
@@ -189,7 +196,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           },
         ])
 
-      if (profileError) throw profileError
+      if (profileError) {
+        console.error('AuthContext: Ошибка создания профиля:', profileError)
+        throw profileError
+      }
+
+      console.log('AuthContext: Профиль создан, автоматически входим в систему')
+      
+      // Автоматически входим в систему после регистрации
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
+
+      if (signInError) {
+        console.error('AuthContext: Ошибка автоматического входа:', signInError)
+        // Не выбрасываем ошибку, так как пользователь уже создан
+        // Пользователь может войти вручную
+      } else {
+        console.log('AuthContext: Автоматический вход успешен')
+      }
     }
   }
 

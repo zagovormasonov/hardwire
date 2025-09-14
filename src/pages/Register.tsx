@@ -14,10 +14,18 @@ const Register: React.FC = () => {
   const onFinish = async (values: { email: string; password: string; fullName: string }) => {
     setLoading(true)
     try {
+      console.log('Register: Начинаем регистрацию пользователя:', values.email)
       await signUp(values.email, values.password, values.fullName)
+      console.log('Register: Регистрация успешна, перенаправляем на главную')
       message.success('Регистрация успешна! Добро пожаловать!')
-      navigate('/')
+      
+      // Небольшая задержка для показа сообщения
+      setTimeout(() => {
+        navigate('/')
+      }, 1000)
+      
     } catch (error: any) {
+      console.error('Register: Ошибка регистрации:', error)
       message.error(error.message || 'Ошибка регистрации')
     } finally {
       setLoading(false)
