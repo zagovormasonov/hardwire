@@ -17,7 +17,7 @@ interface Message {
   sender_avatar?: string
 }
 
-interface ChatWebSocketProps {
+interface ChatSimpleProps {
   sellerId: string
   sellerName: string
   sellerAvatar?: string
@@ -25,7 +25,7 @@ interface ChatWebSocketProps {
   onClose?: () => void
 }
 
-const ChatWebSocket: React.FC<ChatWebSocketProps> = ({ 
+const ChatSimple: React.FC<ChatSimpleProps> = ({ 
   sellerId, 
   sellerName, 
   sellerAvatar, 
@@ -37,107 +37,10 @@ const ChatWebSocket: React.FC<ChatWebSocketProps> = ({
   const [newMessage, setNewMessage] = useState('')
   const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
-  const [wsConnected, setWsConnected] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
-  const wsRef = useRef<WebSocket | null>(null)
+  const intervalRef = useRef<NodeJS.Timeout | null>(null)
 
-  console.log('ChatWebSocket: Компонент рендерится', { sellerId, sellerName, productTitle, userId: user?.id })
-
-  // Подключение к WebSocket серверу
-  useEffect(() => {
-    if (!user) return
-
-    console.log('ChatWebSocket: Подключаемся к WebSocket серверу')
-    
-    const wsUrl = `wss://gopfkqwtcvwnkbghvbov.supabase.co/functions/v1/websocket-server`
-    const ws = new WebSocket(wsUrl)
-    wsRef.current = ws
-
-    ws.onopen = () => {
-      console.log('ChatWebSocket: WebSocket соединение установлено')
-      setWsConnected(true)
-      
-      // Авторизуемся
-      ws.send(JSON.stringify({
-        type: 'auth',
-        userId: user.id
-      }))
-    }
-
-    ws.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data)
-        console.log('ChatWebSocket: Получено сообщение от WebSocket:', data)
-        
-        if (data.type === 'auth_success') {
-          console.log('ChatWebSocket: Авторизация в WebSocket успешна')
-        }
-        
-        if (data.type === 'new_message') {
-          console.log('ChatWebSocket: Получено новое сообщение:', data.message)
-          
-          // Получаем информацию об отправителе
-          const getSenderInfo = async () => {
-            const { data: senderData } = await supabase
-              .from('users')
-              .select('name, avatar_url')
-              .eq('id', data.message.sender_id)
-              .single()
-
-            const newMessage: Message = {
-              ...data.message,
-              sender_name: senderData?.name,
-              sender_avatar: senderData?.avatar_url
-            }
-
-            setMessages(prev => [...prev, newMessage])
-            
-            // Прокручиваем к последнему сообщению
-            setTimeout(() => {
-              messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-            }, 100)
-          }
-          
-          getSenderInfo()
-        }
-        
-        if (data.type === 'message_sent') {
-          console.log('ChatWebSocket: Сообщение успешно отправлено:', data.messageId)
-        }
-        
-        if (data.type === 'error') {
-          console.error('ChatWebSocket: Ошибка WebSocket:', data.message)
-          message.error(data.message)
-        }
-        
-      } catch (error) {
-        console.error('ChatWebSocket: Ошибка обработки WebSocket сообщения:', error)
-      }
-    }
-
-    ws.onclose = () => {
-      console.log('ChatWebSocket: WebSocket соединение закрыто')
-      setWsConnected(false)
-      
-      // Переподключаемся через 3 секунды
-      setTimeout(() => {
-        if (wsRef.current?.readyState === WebSocket.CLOSED) {
-          console.log('ChatWebSocket: Переподключаемся к WebSocket')
-          // Переподключение будет выполнено в useEffect
-        }
-      }, 3000)
-    }
-
-    ws.onerror = (error) => {
-      console.error('ChatWebSocket: Ошибка WebSocket:', error)
-      setWsConnected(false)
-    }
-
-    return () => {
-      console.log('ChatWebSocket: Закрываем WebSocket соединение')
-      ws.close()
-    }
-  }, [user])
+  console.log('ChatSimple: Компонент рендерится', { sellerId, sellerName, productTitle, userId: user?.id })
 
   // Загружаем историю сообщений
   useEffect(() => {
@@ -145,9 +48,8 @@ const ChatWebSocket: React.FC<ChatWebSocketProps> = ({
       if (!user) return
 
       try {
-        console.log('ChatWebSocket: Загружаем историю сообщений')
+        console.log('ChatSimple: Загружаем историю сообщений')
         
-        // Используем обычный Supabase API для загрузки сообщений
         const { data, error } = await supabase
           .from('messages')
           .select(`
@@ -158,12 +60,14 @@ const ChatWebSocket: React.FC<ChatWebSocketProps> = ({
           .order('created_at', { ascending: true })
 
         if (error) {
-          throw new Error('Failed to fetch messages')
+          console.error('ChatSimple: Ошибка загрузки сообщений:', error)
+          message.error('Не удалось загрузить сообщения')
+          return
         }
+
+        console.log('ChatSimple: Загружено сообщений:', data?.length)
         
-        console.log('ChatWebSocket: Загружено сообщений:', data?.length)
-        
-        const formattedMessages = data?.map((msg: any) => ({
+        const formattedMessages = data?.map(msg => ({
           ...msg,
           sender_name: (msg.sender as any)?.name,
           sender_avatar: (msg.sender as any)?.avatar_url
@@ -171,14 +75,66 @@ const ChatWebSocket: React.FC<ChatWebSocketProps> = ({
         
         setMessages(formattedMessages)
       } catch (error) {
-        console.error('ChatWebSocket: Ошибка при загрузке сообщений:', error)
-        message.error('Не удалось загрузить сообщения')
+        console.error('ChatSimple: Ошибка при загрузке сообщений:', error)
+        message.error('Произошла ошибка при загрузке сообщений')
       } finally {
         setLoading(false)
       }
     }
 
     loadMessages()
+  }, [user, sellerId])
+
+  // Периодическое обновление сообщений
+  useEffect(() => {
+    if (!user) return
+
+    console.log('ChatSimple: Запускаем периодическое обновление сообщений')
+    
+    const updateMessages = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('messages')
+          .select(`
+            *,
+            sender:users!messages_sender_id_fkey(name, avatar_url)
+          `)
+          .or(`and(sender_id.eq.${user.id},receiver_id.eq.${sellerId}),and(sender_id.eq.${sellerId},receiver_id.eq.${user.id})`)
+          .order('created_at', { ascending: true })
+
+        if (error) {
+          console.error('ChatSimple: Ошибка обновления сообщений:', error)
+          return
+        }
+
+        const updatedMessages = data?.map(msg => ({
+          ...msg,
+          sender_name: (msg.sender as any)?.name,
+          sender_avatar: (msg.sender as any)?.avatar_url
+        })) || []
+
+        setMessages(prev => {
+          // Проверяем, есть ли новые сообщения
+          if (prev.length !== updatedMessages.length) {
+            console.log('ChatSimple: Обнаружены новые сообщения')
+            return updatedMessages
+          }
+          return prev
+        })
+      } catch (error) {
+        console.error('ChatSimple: Ошибка при обновлении сообщений:', error)
+      }
+    }
+
+    // Обновляем каждые 2 секунды
+    intervalRef.current = setInterval(updateMessages, 2000)
+
+    return () => {
+      console.log('ChatSimple: Останавливаем периодическое обновление')
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current)
+      }
+    }
   }, [user, sellerId])
 
   // Прокручиваем к последнему сообщению при загрузке
@@ -191,19 +147,27 @@ const ChatWebSocket: React.FC<ChatWebSocketProps> = ({
   }, [loading, messages])
 
   const handleSendMessage = async () => {
-    if (!newMessage.trim() || !user || !wsRef.current) return
+    if (!newMessage.trim() || !user) return
 
     setSending(true)
     try {
-      console.log('ChatWebSocket: Отправляем сообщение через WebSocket:', newMessage)
+      console.log('ChatSimple: Отправляем сообщение:', newMessage)
       
-      // Отправляем через WebSocket
-      wsRef.current.send(JSON.stringify({
-        type: 'message',
-        senderId: user.id,
-        receiverId: sellerId,
-        messageText: newMessage.trim()
-      }))
+      const { error } = await supabase
+        .from('messages')
+        .insert({
+          sender_id: user.id,
+          receiver_id: sellerId,
+          message_text: newMessage.trim()
+        })
+
+      if (error) {
+        console.error('ChatSimple: Ошибка отправки сообщения:', error)
+        message.error('Не удалось отправить сообщение')
+        return
+      }
+
+      console.log('ChatSimple: Сообщение отправлено успешно')
       
       // Добавляем сообщение в локальное состояние сразу
       const newMessageObj: Message = {
@@ -224,8 +188,27 @@ const ChatWebSocket: React.FC<ChatWebSocketProps> = ({
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
       }, 100)
       
+      // Отправляем push-уведомление
+      try {
+        await supabase.functions.invoke('send-push-notification', {
+          body: {
+            user_id: sellerId,
+            title: 'Новое сообщение',
+            body: `${user.full_name || 'Пользователь'} написал вам: ${newMessageObj.message_text.substring(0, 50)}${newMessageObj.message_text.length > 50 ? '...' : ''}`,
+            data: {
+              type: 'message',
+              sender_id: user.id,
+              sender_name: user.full_name || 'Пользователь',
+              product_title: productTitle
+            }
+          }
+        })
+      } catch (pushError) {
+        console.error('ChatSimple: Ошибка отправки push-уведомления:', pushError)
+      }
+
     } catch (error) {
-      console.error('ChatWebSocket: Ошибка при отправке сообщения:', error)
+      console.error('ChatSimple: Общая ошибка при отправке сообщения:', error)
       message.error('Произошла ошибка при отправке сообщения')
     } finally {
       setSending(false)
@@ -289,7 +272,7 @@ const ChatWebSocket: React.FC<ChatWebSocketProps> = ({
           <div>
             <Title level={5} style={{ margin: 0, color: '#ffffff' }}>
               {sellerName}
-              {wsConnected && <span style={{ color: '#00ff88', marginLeft: '8px' }}>●</span>}
+              <span style={{ color: '#00ff88', marginLeft: '8px' }}>●</span>
             </Title>
             {productTitle && (
               <Text type="secondary" style={{ fontSize: '12px' }}>
@@ -435,7 +418,7 @@ const ChatWebSocket: React.FC<ChatWebSocketProps> = ({
             icon={<SendOutlined />}
             loading={sending}
             onClick={handleSendMessage}
-            disabled={!newMessage.trim() || !wsConnected}
+            disabled={!newMessage.trim()}
             style={{
               background: '#00ff88',
               borderColor: '#00ff88',
@@ -451,15 +434,13 @@ const ChatWebSocket: React.FC<ChatWebSocketProps> = ({
           color: '#9ca3af'
         }}>
           {newMessage.length}/500
-          {!wsConnected && (
-            <span style={{ color: '#ff6b6b', marginLeft: '8px' }}>
-              Подключение...
-            </span>
-          )}
+          <span style={{ color: '#00ff88', marginLeft: '8px' }}>
+            Обновление каждые 2 сек
+          </span>
         </div>
       </div>
     </Modal>
   )
 }
 
-export default ChatWebSocket
+export default ChatSimple

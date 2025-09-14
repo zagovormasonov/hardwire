@@ -49,6 +49,7 @@ const ChatList: React.FC<ChatListProps> = ({ onChatSelect }) => {
           `)
           .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`)
           .order('created_at', { ascending: false })
+          .limit(100)
 
         if (messagesError) {
           console.error('ChatList: Ошибка загрузки сообщений:', messagesError)
