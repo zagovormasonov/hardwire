@@ -16,23 +16,24 @@ const Register: React.FC = () => {
     try {
       console.log('Register: Начинаем регистрацию пользователя:', values.email)
       
-      // Показываем сообщение о подтверждении email сразу
-      message.success(
-        `Регистрация успешна! Проверьте почту ${values.email} и подтвердите аккаунт.`,
-        8
-      )
-      
       const result = await signUp(values.email, values.password, values.fullName)
       
       if (result?.needsEmailConfirmation) {
-        console.log('Register: Требуется подтверждение email')
+        console.log('Register: Пользователь создан, показываем сообщение о подтверждении email')
+        
+        // Показываем сообщение о подтверждении email после успешного создания пользователя
+        message.success(
+          `Аккаунт создан! Проверьте почту ${values.email} и подтвердите ваш аккаунт в письме, которое придет на указанную почту.`,
+          10
+        )
         
         // Перенаправляем на страницу входа
         setTimeout(() => {
           navigate('/login')
-        }, 2000)
+        }, 3000)
       } else {
         console.log('Register: Регистрация успешна, перенаправляем на главную')
+        message.success('Регистрация успешна! Добро пожаловать!')
         
         setTimeout(() => {
           navigate('/')

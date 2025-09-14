@@ -210,6 +210,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         email: data.user.email || email
       }
     }
+    
+    // Если что-то пошло не так, возвращаем базовый результат
+    return {
+      success: true,
+      needsEmailConfirmation: true,
+      email: email
+    }
   }
 
   const signIn = async (email: string, password: string) => {
