@@ -1667,6 +1667,130 @@ input[type="radio"]:focus {
   }
 }
 
+/* Дополнительные мобильные стили */
+@media (max-width: 768px) {
+  /* Увеличиваем области касания для мобильных */
+  .ant-btn {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  .ant-input {
+    min-height: 44px;
+  }
+  
+  .ant-select-selector {
+    min-height: 44px;
+  }
+  
+  .ant-avatar {
+    min-width: 44px;
+    min-height: 44px;
+  }
+  
+  /* Улучшаем отступы для мобильных */
+  .ant-card {
+    margin-bottom: 16px;
+  }
+  
+  .ant-card-body {
+    padding: 16px;
+  }
+  
+  /* Адаптивные размеры текста */
+  .ant-typography {
+    font-size: 14px;
+  }
+  
+  .ant-typography.ant-typography-h1 {
+    font-size: 24px;
+  }
+  
+  .ant-typography.ant-typography-h2 {
+    font-size: 20px;
+  }
+  
+  .ant-typography.ant-typography-h3 {
+    font-size: 18px;
+  }
+  
+  .ant-typography.ant-typography-h4 {
+    font-size: 16px;
+  }
+  
+  /* Улучшаем мобильное меню */
+  .ant-drawer-body {
+    padding: 16px 0;
+  }
+  
+  /* Адаптивные кнопки в мобильном меню */
+  .ant-drawer .ant-btn {
+    height: 48px;
+    font-size: 16px;
+  }
+  
+  /* Улучшаем карточки товаров на мобильных */
+  .ant-card-cover {
+    height: 200px;
+  }
+  
+  /* Адаптивные отступы */
+  .ant-space {
+    gap: 8px !important;
+  }
+  
+  .ant-space-vertical > .ant-space-item {
+    margin-bottom: 8px;
+  }
+}
+
+/* Очень маленькие экраны */
+@media (max-width: 480px) {
+  .ant-card-body {
+    padding: 12px;
+  }
+  
+  .ant-typography {
+    font-size: 13px;
+  }
+  
+  .ant-btn {
+    font-size: 14px;
+  }
+  
+  /* Компактные карточки */
+  .ant-card-cover {
+    height: 150px;
+  }
+  
+  /* Уменьшаем отступы */
+  .ant-space {
+    gap: 4px !important;
+  }
+}
+
+/* Горизонтальная ориентация на мобильных */
+@media (max-width: 768px) and (orientation: landscape) {
+  .ant-drawer {
+    height: 100vh;
+  }
+  
+  .ant-drawer-body {
+    padding: 8px 0;
+  }
+}
+
+/* Улучшения для планшетов */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .ant-card-body {
+    padding: 20px;
+  }
+  
+  .ant-typography {
+    font-size: 15px;
+  }
+}
+
 /* Скроллбар */
 ::-webkit-scrollbar {
   width: 8px;

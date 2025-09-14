@@ -257,6 +257,7 @@ const Feed: React.FC = () => {
                 background: '#2a2a2a',
                 border: '1px solid #374151',
                 borderRadius: '8px',
+                height: window.innerWidth < 768 ? '44px' : '32px',
               }}
             />
           </Col>
@@ -267,6 +268,7 @@ const Feed: React.FC = () => {
               onChange={setSortBy}
               style={{ width: '100%' }}
               suffixIcon={sortBy.includes('asc') ? <SortAscendingOutlined /> : <SortDescendingOutlined />}
+              size={window.innerWidth < 768 ? 'large' : 'middle'}
             >
               <Option value="newest">Сначала новые</Option>
               <Option value="oldest">Сначала старые</Option>
@@ -288,13 +290,21 @@ const Feed: React.FC = () => {
                 } 
                 key="1"
               >
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                <div style={{ 
+                  display: 'flex', 
+                  flexWrap: 'wrap', 
+                  gap: '8px',
+                  flexDirection: window.innerWidth < 768 ? 'column' : 'row'
+                }}>
                   {CATEGORIES.map(category => (
                     <Checkbox
                       key={category}
                       checked={selectedCategories.includes(category)}
                       onChange={() => toggleCategory(category)}
-                      style={{ color: '#ffffff' }}
+                      style={{ 
+                        color: '#ffffff',
+                        marginBottom: window.innerWidth < 768 ? '8px' : '0'
+                      }}
                     >
                       {category}
                     </Checkbox>
