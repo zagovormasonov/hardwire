@@ -20,9 +20,12 @@ const Header: React.FC = () => {
       await signOut()
       console.log('Header: Выход успешен, перенаправляем на главную')
       navigate('/')
+      
     } catch (error) {
       console.error('Header: Ошибка при выходе:', error)
-      // Попробуем принудительно очистить состояние
+      // Принудительно очищаем все и перенаправляем
+      localStorage.clear()
+      sessionStorage.clear()
       window.location.href = '/'
     }
   }

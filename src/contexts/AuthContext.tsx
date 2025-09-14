@@ -63,13 +63,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Слушаем изменения аутентификации
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_, session) => {
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (!isMounted) return
+      
+      console.log('AuthContext: Auth state change:', event, session ? 'session exists' : 'no session')
       
       setSession(session)
       if (session?.user) {
         await fetchUserProfile(session.user)
       } else {
+        console.log('AuthContext: Очищаем состояние пользователя')
         setUser(null)
         setLoading(false)
       }
@@ -200,8 +203,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }
 
   const signOut = async () => {
-    const { error } = await supabase.auth.signOut()
-    if (error) throw error
+    console.log('AuthContext: Начинаем выход из системы')
+    
+    // Сразу очищаем состояние, чтобы избежать зависания
+    setUser(null)
+    setSession(null)
+    setLoading(false)
+    
+    try {
+      const { error } = await supabase.auth.signOut()
+      if (error) {
+        console.error('AuthContext: Ошибка Supabase signOut:', error)
+        // Не выбрасываем ошибку, так как состояние уже очищено
+        return
+      }
+      
+      console.log('AuthContext: Выход успешен')
+    } catch (error) {
+      console.error('AuthContext: Ошибка при выходе:', error)
+      // Не выбрасываем ошибку, так как состояние уже очищено
+    }
   }
 
   const updateProfile = async (updates: Partial<User>) => {
