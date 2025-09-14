@@ -15,14 +15,27 @@ const Register: React.FC = () => {
     setLoading(true)
     try {
       console.log('Register: Начинаем регистрацию пользователя:', values.email)
-      await signUp(values.email, values.password, values.fullName)
-      console.log('Register: Регистрация успешна, перенаправляем на главную')
-      message.success('Регистрация успешна! Добро пожаловать!')
+      const result = await signUp(values.email, values.password, values.fullName)
       
-      // Небольшая задержка для показа сообщения
-      setTimeout(() => {
-        navigate('/')
-      }, 1000)
+      if (result?.needsEmailConfirmation) {
+        console.log('Register: Требуется подтверждение email')
+        message.success(
+          `Регистрация успешна! Проверьте почту ${result.email} и подтвердите аккаунт.`,
+          8
+        )
+        
+        // Перенаправляем на страницу входа
+        setTimeout(() => {
+          navigate('/login')
+        }, 2000)
+      } else {
+        console.log('Register: Регистрация успешна, перенаправляем на главную')
+        message.success('Регистрация успешна! Добро пожаловать!')
+        
+        setTimeout(() => {
+          navigate('/')
+        }, 1000)
+      }
       
     } catch (error: any) {
       console.error('Register: Ошибка регистрации:', error)
@@ -58,6 +71,17 @@ const Register: React.FC = () => {
           <Text style={{ color: '#9ca3af' }}>
             Создайте свой аккаунт
           </Text>
+          <div style={{ 
+            marginTop: '12px', 
+            padding: '12px', 
+            background: '#2a2a2a', 
+            borderRadius: '8px',
+            border: '1px solid #374151'
+          }}>
+            <Text style={{ color: '#9ca3af', fontSize: '12px' }}>
+              📧 После регистрации вам будет отправлено письмо для подтверждения email
+            </Text>
+          </div>
         </div>
 
         <Form

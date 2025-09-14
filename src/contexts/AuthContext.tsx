@@ -15,7 +15,7 @@ interface AuthContextType {
   user: User | null
   session: any | null
   loading: boolean
-  signUp: (email: string, password: string, fullName: string) => Promise<void>
+  signUp: (email: string, password: string, fullName: string) => Promise<{ success: boolean; needsEmailConfirmation: boolean; email: string } | void>
   signIn: (email: string, password: string) => Promise<void>
   signOut: () => Promise<void>
   updateProfile: (updates: Partial<User>) => Promise<void>
@@ -201,20 +201,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         throw profileError
       }
 
-      console.log('AuthContext: Профиль создан, автоматически входим в систему')
+      console.log('AuthContext: Профиль создан, регистрация завершена')
       
-      // Автоматически входим в систему после регистрации
-      const { error: signInError } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      })
-
-      if (signInError) {
-        console.error('AuthContext: Ошибка автоматического входа:', signInError)
-        // Не выбрасываем ошибку, так как пользователь уже создан
-        // Пользователь может войти вручную
-      } else {
-        console.log('AuthContext: Автоматический вход успешен')
+      // Возвращаем информацию о том, что нужно подтвердить email
+      return {
+        success: true,
+        needsEmailConfirmation: true,
+        email: data.user.email || email
       }
     }
   }
