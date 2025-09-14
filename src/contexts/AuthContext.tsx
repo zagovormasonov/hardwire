@@ -120,7 +120,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             id: supabaseUser.id,
             email: supabaseUser.email,
             full_name: supabaseUser.user_metadata?.full_name || supabaseUser.email?.split('@')[0] || 'Пользователь',
-            avatar_url: undefined,
+            avatar_url: supabaseUser.user_metadata?.avatar_url || supabaseUser.user_metadata?.picture,
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString()
           }
@@ -134,7 +134,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             id: supabaseUser.id,
             email: supabaseUser.email,
             full_name: supabaseUser.user_metadata?.full_name || supabaseUser.email?.split('@')[0] || 'Пользователь',
-            avatar_url: undefined,
+            avatar_url: supabaseUser.user_metadata?.avatar_url || supabaseUser.user_metadata?.picture,
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString()
           }
@@ -153,7 +153,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         id: supabaseUser.id,
         email: supabaseUser.email,
         full_name: supabaseUser.user_metadata?.full_name || supabaseUser.email?.split('@')[0] || 'Пользователь',
-        avatar_url: undefined,
+        avatar_url: supabaseUser.user_metadata?.avatar_url || supabaseUser.user_metadata?.picture,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       }
