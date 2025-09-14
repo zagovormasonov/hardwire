@@ -1,9 +1,38 @@
 import React, { useState, useEffect } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
+import { 
+  Card, 
+  Row, 
+  Col, 
+  Input, 
+  Button, 
+  Select, 
+  Checkbox, 
+  Typography, 
+  Space, 
+  Avatar, 
+  Tag, 
+  Spin,
+  Empty,
+  Divider,
+  Collapse
+} from 'antd'
+import { 
+  SearchOutlined, 
+  FilterOutlined, 
+  HeartOutlined, 
+  MessageOutlined, 
+  EyeOutlined,
+  SortAscendingOutlined,
+  SortDescendingOutlined
+} from '@ant-design/icons'
 import { supabase, CATEGORIES } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import { useNotifications } from '../contexts/NotificationContext'
-import { Search, Filter, Heart, MessageCircle, Eye } from 'lucide-react'
+
+const { Title, Text } = Typography
+const { Option } = Select
+const { Panel } = Collapse
 
 // Типы для товаров
 interface Product {
@@ -36,14 +65,12 @@ const Feed: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '')
   const [selectedCategories, setSelectedCategories] = useState<string[]>([])
   const [sortBy, setSortBy] = useState<'newest' | 'oldest' | 'price_asc' | 'price_desc'>('newest')
-  const [showFilters, setShowFilters] = useState(false)
 
   useEffect(() => {
     fetchProducts()
   }, [sortBy])
 
   useEffect(() => {
-    // Обновляем поисковый запрос при изменении URL параметров
     const searchParam = searchParams.get('search')
     if (searchParam !== null) {
       setSearchQuery(searchParam)
@@ -52,11 +79,13 @@ const Feed: React.FC = () => {
 
   const fetchProducts = async () => {
     try {
+      setLoading(true)
+      
       let query = supabase
         .from('products')
         .select(`
           *,
-          users:seller_id (
+          users!products_seller_id_fkey (
             full_name,
             avatar_url
           ),
@@ -65,8 +94,8 @@ const Feed: React.FC = () => {
             user_id
           )
         `)
-        .eq('is_sold', false)
         .eq('is_active', true)
+        .eq('is_sold', false)
 
       // Сортировка
       switch (sortBy) {
@@ -88,18 +117,12 @@ const Feed: React.FC = () => {
 
       if (error) throw error
 
-      // Обрабатываем данные для добавления информации о лайках
-      const processedData = data?.map(product => {
-        const likes_count = product.favorites?.length || 0
-        const is_liked = user ? product.favorites?.some((fav: any) => fav.user_id === user.id) : false
-        
-        return {
-          ...product,
-          likes_count,
-          is_liked,
-          favorites: undefined // Убираем массив favorites из результата
-        }
-      }) || []
+      const processedData = data?.map(product => ({
+        ...product,
+        likes_count: product.favorites?.length || 0,
+        is_liked: user ? product.favorites?.some((fav: any) => fav.user_id === user.id) : false,
+        favorites: undefined
+      })) || []
 
       setProducts(processedData)
     } catch (error) {
@@ -114,17 +137,9 @@ const Feed: React.FC = () => {
     
     const matchesCategory = selectedCategories.length === 0 || 
                            selectedCategories.includes(product.category)
-
+    
     return matchesSearch && matchesCategory
   })
-
-  const toggleCategory = (category: string) => {
-    setSelectedCategories(prev => 
-      prev.includes(category) 
-        ? prev.filter(c => c !== category)
-        : [...prev, category]
-    )
-  }
 
   const toggleLike = async (productId: string, isLiked: boolean) => {
     if (!user) {
@@ -138,7 +153,6 @@ const Feed: React.FC = () => {
 
     try {
       if (isLiked) {
-        // Удаляем из избранного
         const { error } = await supabase
           .from('favorites')
           .delete()
@@ -147,7 +161,6 @@ const Feed: React.FC = () => {
 
         if (error) throw error
 
-        // Обновляем локальное состояние
         setProducts(prev => prev.map(p => 
           p.id === productId 
             ? { ...p, is_liked: false, likes_count: (p.likes_count || 0) - 1 }
@@ -160,17 +173,12 @@ const Feed: React.FC = () => {
           message: 'Товар больше не в вашем списке избранного'
         })
       } else {
-        // Добавляем в избранное
         const { error } = await supabase
           .from('favorites')
-          .insert([{
-            product_id: productId,
-            user_id: user.id
-          }])
+          .insert([{ product_id: productId, user_id: user.id }])
 
         if (error) throw error
 
-        // Обновляем локальное состояние
         setProducts(prev => prev.map(p => 
           p.id === productId 
             ? { ...p, is_liked: true, likes_count: (p.likes_count || 0) + 1 }
@@ -198,192 +206,253 @@ const Feed: React.FC = () => {
 
   const getConditionText = (condition: string) => {
     switch (condition) {
-      case 'new': return 'Новое'
+      case 'new': return 'Новый'
       case 'used': return 'Б/У'
-      case 'refurbished': return 'Восстановленное'
+      case 'refurbished': return 'Восстановленный'
       default: return condition
     }
   }
 
-  if (loading) {
-    return (
-      <div className="text-center py-16">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-neon mx-auto mb-4"></div>
-        <p className="text-text-secondary">Загрузка товаров...</p>
-      </div>
+  const getConditionColor = (condition: string) => {
+    switch (condition) {
+      case 'new': return 'green'
+      case 'used': return 'orange'
+      case 'refurbished': return 'blue'
+      default: return 'default'
+    }
+  }
+
+  const toggleCategory = (category: string) => {
+    setSelectedCategories(prev => 
+      prev.includes(category) 
+        ? prev.filter(c => c !== category)
+        : [...prev, category]
     )
   }
 
   return (
-    <div className="space-y-8">
-      {/* Заголовок */}
-      <div className="text-center">
-        <h1 className="text-3xl font-display font-bold text-gradient mb-2">
-          Лента товаров
-        </h1>
-        <p className="text-text-secondary">
-          Найди идеальное железо для своей сборки
-        </p>
-      </div>
+    <div style={{ padding: '24px 0' }}>
+      <Title level={2} style={{ color: '#ffffff', marginBottom: '24px' }}>
+        Лента товаров
+      </Title>
 
-      {/* Поиск и фильтры */}
-      <div className="card">
-        <div className="space-y-4">
-          {/* Поиск */}
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-            <input
-              type="text"
-              placeholder="Поиск по названию или описанию..."
+      {/* Фильтры */}
+      <Card
+        style={{
+          background: '#1a1a1a',
+          border: '1px solid #374151',
+          borderRadius: '12px',
+          marginBottom: '24px',
+        }}
+        bodyStyle={{ padding: '24px' }}
+      >
+        <Row gutter={[16, 16]} align="middle">
+          <Col xs={24} sm={12} md={8}>
+            <Input
+              placeholder="Поиск товаров..."
+              prefix={<SearchOutlined style={{ color: '#9ca3af' }} />}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="input w-full pl-10"
+              style={{
+                background: '#2a2a2a',
+                border: '1px solid #374151',
+                borderRadius: '8px',
+              }}
             />
-          </div>
-
-          {/* Сортировка и фильтры */}
-          <div className="flex flex-col sm:flex-row gap-4">
-            <select
+          </Col>
+          
+          <Col xs={24} sm={12} md={8}>
+            <Select
               value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as any)}
-              className="input flex-1"
+              onChange={setSortBy}
+              style={{ width: '100%' }}
+              suffixIcon={sortBy.includes('asc') ? <SortAscendingOutlined /> : <SortDescendingOutlined />}
             >
-              <option value="newest">Новые</option>
-              <option value="oldest">Старые</option>
-              <option value="price_asc">Цена ↑</option>
-              <option value="price_desc">Цена ↓</option>
-            </select>
-            <button
-              onClick={() => setShowFilters(!showFilters)}
-              className="btn btn-secondary flex items-center justify-center"
-            >
-              <Filter className="w-4 h-4 mr-2" />
-              Фильтры
-            </button>
-          </div>
+              <Option value="newest">Сначала новые</Option>
+              <Option value="oldest">Сначала старые</Option>
+              <Option value="price_asc">Цена: по возрастанию</Option>
+              <Option value="price_desc">Цена: по убыванию</Option>
+            </Select>
+          </Col>
+
+          <Col xs={24} md={8}>
+            <Collapse ghost>
+              <Panel 
+                header={
+                  <Space>
+                    <FilterOutlined />
+                    <Text style={{ color: '#ffffff' }}>
+                      Категории {selectedCategories.length > 0 && `(${selectedCategories.length})`}
+                    </Text>
+                  </Space>
+                } 
+                key="1"
+              >
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                  {CATEGORIES.map(category => (
+                    <Checkbox
+                      key={category}
+                      checked={selectedCategories.includes(category)}
+                      onChange={() => toggleCategory(category)}
+                      style={{ color: '#ffffff' }}
+                    >
+                      {category}
+                    </Checkbox>
+                  ))}
+                </div>
+              </Panel>
+            </Collapse>
+          </Col>
+        </Row>
+      </Card>
+
+      {/* Товары */}
+      {loading ? (
+        <div style={{ textAlign: 'center', padding: '64px 0' }}>
+          <Spin size="large" />
         </div>
-
-        {/* Фильтры по категориям */}
-        {showFilters && (
-          <div className="mt-6 pt-6 border-t border-gray-600">
-            <h3 className="text-lg font-semibold text-white mb-4">Категории</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-2">
-              {CATEGORIES.map(category => (
-                <label key={category} className="flex items-center space-x-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={selectedCategories.includes(category)}
-                    onChange={() => toggleCategory(category)}
-                    className="w-4 h-4 text-green-400 bg-gray-800 border-gray-600 rounded focus:ring-green-400 focus:ring-2"
-                  />
-                  <span className="text-gray-300 text-sm font-medium">{category}</span>
-                </label>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Результаты */}
-      <div className="text-center mb-6">
-        <p className="text-text-secondary">
-          Найдено товаров: <span className="text-primary-neon font-semibold">{filteredProducts.length}</span>
-        </p>
-      </div>
-
-      {/* Сетка товаров */}
-      {filteredProducts.length === 0 ? (
-        <div className="text-center py-16">
-          <p className="text-text-secondary text-lg">Товары не найдены</p>
-          <p className="text-text-muted">Попробуйте изменить параметры поиска</p>
-        </div>
+      ) : filteredProducts.length === 0 ? (
+        <Empty
+          description="Товары не найдены"
+          style={{ margin: '64px 0' }}
+        />
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <Row gutter={[24, 24]}>
           {filteredProducts.map((product) => (
-            <div key={product.id} className="card group">
-              {/* Изображение и основная информация */}
-              <Link to={`/product/${product.id}`} className="block">
-                {/* Изображение */}
-                <div className="aspect-square bg-gray-800 rounded-lg mb-4 overflow-hidden">
-                  {product.images.length > 0 ? (
-                    <img
-                      src={product.images[0]}
-                      alt={product.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-gray-500">
-                      <Eye className="w-12 h-12" />
-                    </div>
-                  )}
-                </div>
-
-                {/* Информация */}
-                <div className="space-y-3">
-                  <div>
-                    <h3 className="text-lg font-semibold text-white group-hover:text-green-400 transition-colors line-clamp-2">
-                      {product.title}
-                    </h3>
-                    <p className="text-sm text-gray-400">
-                      {product.category} • {getConditionText(product.condition)}
-                    </p>
+            <Col xs={24} sm={12} lg={8} xl={6} key={product.id}>
+              <Card
+                hoverable
+                style={{
+                  background: '#1a1a1a',
+                  border: '1px solid #374151',
+                  borderRadius: '12px',
+                  height: '100%',
+                }}
+                bodyStyle={{ padding: '16px' }}
+                cover={
+                  <div style={{ height: '200px', overflow: 'hidden' }}>
+                    {product.images && product.images.length > 0 ? (
+                      <img
+                        alt={product.title}
+                        src={product.images[0]}
+                        style={{
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'cover',
+                        }}
+                      />
+                    ) : (
+                      <div style={{
+                        width: '100%',
+                        height: '100%',
+                        background: '#2a2a2a',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: '#9ca3af',
+                      }}>
+                        Нет фото
+                      </div>
+                    )}
                   </div>
-
-                         <div className="flex items-center justify-between">
-                           <span className="text-xl font-bold text-green-400">
-                             {formatPrice(product.price)}
-                           </span>
-                           <div className="flex items-center space-x-2 text-gray-500">
-                             <button
-                               onClick={() => toggleLike(product.id, product.is_liked || false)}
-                               className={`p-2 transition-all duration-300 flex items-center justify-center ${
-                                 product.is_liked 
-                                   ? 'text-red-400' 
-                                   : 'text-white hover:text-red-400'
-                               }`}
-                               title={product.is_liked ? 'Удалить из избранного' : 'Добавить в избранное'}
-                             >
-                               <Heart className={`w-4 h-4 ${product.is_liked ? 'fill-current' : ''}`} />
-                             </button>
-                             <span className="text-xs text-gray-400">
-                               {product.likes_count || 0}
-                             </span>
-                             <button
-                               className="p-2 text-white hover:text-blue-400 transition-all duration-300 flex items-center justify-center"
-                               title="Написать продавцу"
-                             >
-                               <MessageCircle className="w-4 h-4" />
-                             </button>
-                           </div>
-                         </div>
+                }
+              >
+                <div style={{ marginBottom: '12px' }}>
+                  <Title level={4} style={{ color: '#ffffff', margin: 0, fontSize: '16px' }}>
+                    {product.title}
+                  </Title>
+                  <Text style={{ color: '#9ca3af', fontSize: '12px' }}>
+                    {product.category}
+                  </Text>
                 </div>
-              </Link>
 
-              {/* Продавец - отдельно от основной ссылки */}
-              <div className="flex items-center space-x-2 pt-2 border-t border-gray-600">
-                <div className="w-6 h-6 bg-gradient-to-r from-green-400 to-blue-400 rounded-full flex items-center justify-center overflow-hidden">
-                  {product.users?.avatar_url ? (
-                    <img 
-                      src={product.users.avatar_url} 
-                      alt={product.users.full_name}
-                      className="w-full h-full object-cover"
+                <div style={{ marginBottom: '12px' }}>
+                  <Text style={{ color: '#9ca3af', fontSize: '14px' }}>
+                    {product.description.length > 100 
+                      ? `${product.description.substring(0, 100)}...` 
+                      : product.description
+                    }
+                  </Text>
+                </div>
+
+                <div style={{ marginBottom: '16px' }}>
+                  <Tag color={getConditionColor(product.condition)}>
+                    {getConditionText(product.condition)}
+                  </Tag>
+                </div>
+
+                <div style={{ 
+                  display: 'flex', 
+                  justifyContent: 'space-between', 
+                  alignItems: 'center',
+                  marginBottom: '16px'
+                }}>
+                  <Text style={{ 
+                    fontSize: '18px', 
+                    fontWeight: 'bold', 
+                    color: '#00ff88' 
+                  }}>
+                    {formatPrice(product.price)}
+                  </Text>
+                  
+                  <Space>
+                    <Button
+                      type="text"
+                      icon={<HeartOutlined />}
+                      onClick={() => toggleLike(product.id, product.is_liked || false)}
+                      style={{
+                        color: product.is_liked ? '#ff4757' : '#ffffff',
+                      }}
                     />
-                  ) : (
-                    <span className="text-black font-bold text-xs">
-                      {product.users?.full_name?.charAt(0).toUpperCase() || '?'}
-                    </span>
-                  )}
+                    <Text style={{ color: '#9ca3af', fontSize: '12px' }}>
+                      {product.likes_count || 0}
+                    </Text>
+                    <Button
+                      type="text"
+                      icon={<MessageOutlined />}
+                      style={{ color: '#ffffff' }}
+                    />
+                  </Space>
                 </div>
-                <Link 
-                  to={`/profile/${product.seller_id}`}
-                  className="text-sm text-gray-300 hover:text-green-400 transition-colors"
-                >
-                  {product.users?.full_name || 'Неизвестный'}
-                </Link>
-              </div>
-            </div>
+
+                <Divider style={{ borderColor: '#374151', margin: '12px 0' }} />
+
+                <div style={{ 
+                  display: 'flex', 
+                  justifyContent: 'space-between', 
+                  alignItems: 'center' 
+                }}>
+                  <Space>
+                    <Avatar 
+                      src={product.users?.avatar_url}
+                      size="small"
+                    >
+                      {product.users?.full_name?.charAt(0)}
+                    </Avatar>
+                    <Text style={{ color: '#9ca3af', fontSize: '12px' }}>
+                      {product.users?.full_name}
+                    </Text>
+                  </Space>
+                  
+                  <Button
+                    type="primary"
+                    size="small"
+                    icon={<EyeOutlined />}
+                    style={{
+                      background: '#00ff88',
+                      borderColor: '#00ff88',
+                      color: '#000',
+                    }}
+                  >
+                    <Link to={`/product/${product.id}`} style={{ color: '#000' }}>
+                      Смотреть
+                    </Link>
+                  </Button>
+                </div>
+              </Card>
+            </Col>
           ))}
-        </div>
+        </Row>
       )}
     </div>
   )

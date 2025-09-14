@@ -1,192 +1,184 @@
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { Form, Input, Button, Card, Typography, Divider, message } from 'antd'
+import { MailOutlined, LockOutlined, UserOutlined, EyeInvisibleOutlined, EyeTwoTone } from '@ant-design/icons'
 import { useAuth } from '../contexts/AuthContext'
-import { User, Mail, Lock, Eye, EyeOff } from 'lucide-react'
+
+const { Title, Text } = Typography
 
 const Register: React.FC = () => {
-  const [formData, setFormData] = useState({
-    fullName: '',
-    email: '',
-    password: '',
-    confirmPassword: ''
-  })
-  const [showPassword, setShowPassword] = useState(false)
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
-
   const { signUp } = useAuth()
   const navigate = useNavigate()
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    })
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError('')
+  const onFinish = async (values: { email: string; password: string; fullName: string }) => {
     setLoading(true)
-
-    if (formData.password !== formData.confirmPassword) {
-      setError('Пароли не совпадают')
-      setLoading(false)
-      return
-    }
-
-    if (formData.password.length < 6) {
-      setError('Пароль должен содержать минимум 6 символов')
-      setLoading(false)
-      return
-    }
-
     try {
-      await signUp(formData.email, formData.password, formData.fullName)
-      navigate('/feed')
+      await signUp(values.email, values.password, values.fullName)
+      message.success('Регистрация успешна! Добро пожаловать!')
+      navigate('/')
     } catch (error: any) {
-      console.error('Register: Registration error:', error)
-      setError(error.message || 'Ошибка регистрации')
+      message.error(error.message || 'Ошибка регистрации')
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div className="text-center">
-          <div className="mx-auto h-12 w-12 bg-gradient-primary rounded-lg flex items-center justify-center">
-            <User className="h-6 w-6 text-bg-dark" />
-          </div>
-          <h2 className="mt-6 text-3xl font-display font-bold text-gradient">
-            Регистрация
-          </h2>
-          <p className="mt-2 text-text-secondary">
-            Присоединяйся к бирже железа
-          </p>
+    <div style={{ 
+      minHeight: '100vh', 
+      background: '#0a0a0a',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '24px',
+    }}>
+      <Card
+        style={{
+          width: '100%',
+          maxWidth: '400px',
+          background: '#1a1a1a',
+          border: '1px solid #374151',
+          borderRadius: '16px',
+        }}
+        bodyStyle={{ padding: '48px 32px' }}
+      >
+        <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+          <Title level={2} style={{ color: '#ffffff', marginBottom: '8px' }}>
+            Регистрация в HardWire
+          </Title>
+          <Text style={{ color: '#9ca3af' }}>
+            Создайте свой аккаунт
+          </Text>
         </div>
 
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="space-y-4">
-            <div>
-              <label htmlFor="fullName" className="block text-sm font-medium text-text-primary mb-2">
-                Полное имя
-              </label>
-              <div className="relative">
-                <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-text-muted w-4 h-4" />
-                <input
-                  id="fullName"
-                  name="fullName"
-                  type="text"
-                  required
-                  value={formData.fullName}
-                  onChange={handleChange}
-                  className="input w-full pl-10"
-                  placeholder="Введите ваше имя"
-                />
-              </div>
-            </div>
+        <Form
+          name="register"
+          onFinish={onFinish}
+          layout="vertical"
+          size="large"
+        >
+          <Form.Item
+            name="fullName"
+            rules={[
+              { required: true, message: 'Введите ваше имя' },
+              { min: 2, message: 'Имя должно содержать минимум 2 символа' }
+            ]}
+          >
+            <Input
+              prefix={<UserOutlined style={{ color: '#9ca3af' }} />}
+              placeholder="Полное имя"
+              style={{
+                background: '#2a2a2a',
+                border: '1px solid #374151',
+                borderRadius: '8px',
+              }}
+            />
+          </Form.Item>
 
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-text-primary mb-2">
-                Email
-              </label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-text-muted w-4 h-4" />
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  required
-                  value={formData.email}
-                  onChange={handleChange}
-                  className="input w-full pl-10"
-                  placeholder="your@email.com"
-                />
-              </div>
-            </div>
+          <Form.Item
+            name="email"
+            rules={[
+              { required: true, message: 'Введите email' },
+              { type: 'email', message: 'Неверный формат email' }
+            ]}
+          >
+            <Input
+              prefix={<MailOutlined style={{ color: '#9ca3af' }} />}
+              placeholder="Email"
+              style={{
+                background: '#2a2a2a',
+                border: '1px solid #374151',
+                borderRadius: '8px',
+              }}
+            />
+          </Form.Item>
 
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-text-primary mb-2">
-                Пароль
-              </label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-text-muted w-4 h-4" />
-                <input
-                  id="password"
-                  name="password"
-                  type={showPassword ? 'text' : 'password'}
-                  required
-                  value={formData.password}
-                  onChange={handleChange}
-                  className="input w-full pl-10 pr-10"
-                  placeholder="Минимум 6 символов"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-text-muted hover:text-text-primary"
-                >
-                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
-              </div>
-            </div>
+          <Form.Item
+            name="password"
+            rules={[
+              { required: true, message: 'Введите пароль' },
+              { min: 6, message: 'Пароль должен содержать минимум 6 символов' }
+            ]}
+          >
+            <Input.Password
+              prefix={<LockOutlined style={{ color: '#9ca3af' }} />}
+              placeholder="Пароль"
+              iconRender={(visible) => (visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />)}
+              style={{
+                background: '#2a2a2a',
+                border: '1px solid #374151',
+                borderRadius: '8px',
+              }}
+            />
+          </Form.Item>
 
-            <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-text-primary mb-2">
-                Подтвердите пароль
-              </label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-text-muted w-4 h-4" />
-                <input
-                  id="confirmPassword"
-                  name="confirmPassword"
-                  type={showConfirmPassword ? 'text' : 'password'}
-                  required
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                  className="input w-full pl-10 pr-10"
-                  placeholder="Повторите пароль"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-text-muted hover:text-text-primary"
-                >
-                  {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
-              </div>
-            </div>
-          </div>
+          <Form.Item
+            name="confirmPassword"
+            dependencies={['password']}
+            rules={[
+              { required: true, message: 'Подтвердите пароль' },
+              ({ getFieldValue }) => ({
+                validator(_, value) {
+                  if (!value || getFieldValue('password') === value) {
+                    return Promise.resolve()
+                  }
+                  return Promise.reject(new Error('Пароли не совпадают'))
+                },
+              }),
+            ]}
+          >
+            <Input.Password
+              prefix={<LockOutlined style={{ color: '#9ca3af' }} />}
+              placeholder="Подтвердите пароль"
+              iconRender={(visible) => (visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />)}
+              style={{
+                background: '#2a2a2a',
+                border: '1px solid #374151',
+                borderRadius: '8px',
+              }}
+            />
+          </Form.Item>
 
-          {error && (
-            <div className="bg-danger-neon/10 border border-danger-neon/30 rounded-lg p-3">
-              <p className="text-danger-neon text-sm">{error}</p>
-            </div>
-          )}
-
-          <div>
-            <button
-              type="submit"
-              disabled={loading}
-              className="btn btn-primary w-full py-3 text-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+          <Form.Item>
+            <Button
+              type="primary"
+              htmlType="submit"
+              loading={loading}
+              block
+              style={{
+                height: '48px',
+                background: '#00ff88',
+                borderColor: '#00ff88',
+                color: '#000',
+                fontSize: '16px',
+                fontWeight: 'bold',
+              }}
             >
-              {loading ? 'Регистрация...' : 'Зарегистрироваться'}
-            </button>
-          </div>
+              Зарегистрироваться
+            </Button>
+          </Form.Item>
+        </Form>
 
-          <div className="text-center">
-            <p className="text-text-secondary">
-              Уже есть аккаунт?{' '}
-              <Link to="/login" className="text-primary-neon hover:text-accent-neon font-medium">
-                Войти
-              </Link>
-            </p>
-          </div>
-        </form>
-      </div>
+        <Divider style={{ borderColor: '#374151' }}>
+          <Text style={{ color: '#9ca3af' }}>или</Text>
+        </Divider>
+
+        <div style={{ textAlign: 'center' }}>
+          <Text style={{ color: '#9ca3af' }}>
+            Уже есть аккаунт?{' '}
+            <Link 
+              to="/login" 
+              style={{ 
+                color: '#00ff88',
+                fontWeight: 'bold',
+              }}
+            >
+              Войти
+            </Link>
+          </Text>
+        </div>
+      </Card>
     </div>
   )
 }

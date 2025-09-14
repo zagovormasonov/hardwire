@@ -1,7 +1,9 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import { ConfigProvider } from 'antd'
 import { AuthProvider } from './contexts/AuthContext'
 import { SearchProvider } from './contexts/SearchContext'
 import { NotificationProvider } from './contexts/NotificationContext'
+import theme from './theme'
 import Layout from './components/Layout'
 import Home from './pages/Home'
 import Login from './pages/Login'
@@ -16,26 +18,28 @@ import SellerProfile from './pages/SellerProfile'
 
 function App() {
   return (
-    <AuthProvider>
-      <Router>
-        <SearchProvider>
-          <NotificationProvider>
-            <Routes>
-              <Route path="/" element={<Layout><Home /></Layout>} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
-              <Route path="/feed" element={<Layout><Feed /></Layout>} />
-              <Route path="/categories" element={<Layout><Categories /></Layout>} />
-              <Route path="/create" element={<Layout><CreateProduct /></Layout>} />
-              <Route path="/profile" element={<Layout><Profile /></Layout>} />
-              <Route path="/product/:id" element={<Layout><ProductDetail /></Layout>} />
-              <Route path="/edit/:id" element={<Layout><EditProduct /></Layout>} />
-              <Route path="/profile/:id" element={<Layout><SellerProfile /></Layout>} />
-            </Routes>
-          </NotificationProvider>
-        </SearchProvider>
-      </Router>
-    </AuthProvider>
+    <ConfigProvider theme={theme}>
+      <AuthProvider>
+        <Router>
+          <SearchProvider>
+            <NotificationProvider>
+              <Routes>
+                <Route path="/" element={<Layout><Home /></Layout>} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
+                <Route path="/feed" element={<Layout><Feed /></Layout>} />
+                <Route path="/categories" element={<Layout><Categories /></Layout>} />
+                <Route path="/create" element={<Layout><CreateProduct /></Layout>} />
+                <Route path="/profile" element={<Layout><Profile /></Layout>} />
+                <Route path="/product/:id" element={<Layout><ProductDetail /></Layout>} />
+                <Route path="/edit/:id" element={<Layout><EditProduct /></Layout>} />
+                <Route path="/profile/:id" element={<Layout><SellerProfile /></Layout>} />
+              </Routes>
+            </NotificationProvider>
+          </SearchProvider>
+        </Router>
+      </AuthProvider>
+    </ConfigProvider>
   )
 }
 

@@ -1,40 +1,39 @@
 import React from 'react'
+import { Layout, Spin } from 'antd'
 import Header from './Header'
 import { useAuth } from '../contexts/AuthContext'
+
+const { Content } = Layout
 
 interface LayoutProps {
   children: React.ReactNode
 }
 
-const Layout: React.FC<LayoutProps> = ({ children }) => {
+const AppLayout: React.FC<LayoutProps> = ({ children }) => {
   const { loading } = useAuth()
 
   if (loading) {
     return (
-      <div className="preloader-container">
-        <div className="preloader-content">
-          {/* Простой крутящийся спиннер */}
-          <div className="preloader-spinner">
-            <div className="spinner-ring"></div>
-          </div>
-          
-          {/* Текст загрузки */}
-          <div className="preloader-text">
-            <p className="preloader-subtitle">Загрузка данных...</p>
-          </div>
-        </div>
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        height: '100vh',
+        background: '#0a0a0a',
+      }}>
+        <Spin size="large" />
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gradient">
+    <Layout style={{ minHeight: '100vh', background: '#0a0a0a' }}>
       <Header />
-      <main className="main-content">
+      <Content style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto', width: '100%' }}>
         {children}
-      </main>
-    </div>
+      </Content>
+    </Layout>
   )
 }
 
-export default Layout
+export default AppLayout

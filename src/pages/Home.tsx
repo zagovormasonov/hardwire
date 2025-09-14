@@ -1,133 +1,252 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
+import { Card, Row, Col, Typography, Button, Space } from 'antd'
+import { DesktopOutlined, HddOutlined, ThunderboltOutlined, ArrowRightOutlined } from '@ant-design/icons'
 import { useAuth } from '../contexts/AuthContext'
-import { Cpu, HardDrive, Monitor, Zap, ArrowRight, Star } from 'lucide-react'
+
+const { Title, Paragraph, Text } = Typography
 
 const Home: React.FC = () => {
   const { user } = useAuth()
 
   const features = [
     {
-      icon: <Cpu className="w-8 h-8" />,
+      icon: <DesktopOutlined style={{ fontSize: '32px', color: '#00ff88' }} />,
       title: 'Процессоры',
       description: 'Найди идеальный CPU для своей сборки'
     },
     {
-      icon: <HardDrive className="w-8 h-8" />,
+      icon: <DesktopOutlined style={{ fontSize: '32px', color: '#00ff88' }} />,
       title: 'Видеокарты',
       description: 'RTX, GTX, RX - все карты в одном месте'
     },
     {
-      icon: <Monitor className="w-8 h-8" />,
+      icon: <HddOutlined style={{ fontSize: '32px', color: '#00ff88' }} />,
       title: 'Комплектующие',
       description: 'Материнские платы, память, накопители'
     },
     {
-      icon: <Zap className="w-8 h-8" />,
+      icon: <ThunderboltOutlined style={{ fontSize: '32px', color: '#00ff88' }} />,
       title: 'Быстрая продажа',
       description: 'Продай свое железо за считанные минуты'
     }
   ]
 
   return (
-    <div className="space-y-16">
-      {/* Hero секция */}
-      <section className="text-center py-16">
-        <div className="max-w-4xl mx-auto">
-          <h1 className="text-5xl md:text-7xl font-display font-bold text-gradient mb-6">
-            HardWire
-          </h1>
-          <p className="text-xl md:text-2xl text-text-secondary mb-8 leading-relaxed">
-            Биржа железа нового поколения.<br />
-            Покупай, продавай, обменивайся комплектующими ПК.
-          </p>
-          
+    <div style={{ padding: '24px 0' }}>
+      {/* Hero Section */}
+      <div style={{ textAlign: 'center', marginBottom: '64px' }}>
+        <Title 
+          level={1} 
+          style={{ 
+            fontSize: '48px', 
+            fontWeight: 'bold', 
+            color: '#ffffff',
+            marginBottom: '16px',
+            background: 'linear-gradient(135deg, #00ff88 0%, #00cc6a 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text',
+          }}
+        >
+          HardWire
+        </Title>
+        <Paragraph 
+          style={{ 
+            fontSize: '20px', 
+            color: '#9ca3af',
+            marginBottom: '32px',
+            maxWidth: '600px',
+            margin: '0 auto 32px',
+          }}
+        >
+          Современная биржа комплектующих ПК. Покупай, продавай, обновляй свое железо!
+        </Paragraph>
+        
+        <Space size="large">
+          <Button 
+            type="primary" 
+            size="large"
+            style={{ 
+              background: '#00ff88',
+              borderColor: '#00ff88',
+              color: '#000',
+              height: '48px',
+              padding: '0 32px',
+              fontSize: '16px',
+              fontWeight: 'bold',
+            }}
+          >
+            <Link to="/feed" style={{ color: '#000' }}>Смотреть товары</Link>
+          </Button>
           {user ? (
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link to="/feed" className="btn btn-primary text-lg px-8 py-4">
-                Перейти к ленте
-                <ArrowRight className="ml-2 w-5 h-5" />
-              </Link>
-              <Link to="/create" className="btn btn-secondary text-lg px-8 py-4">
-                Продать железо
-              </Link>
-            </div>
+            <Button 
+              size="large"
+              style={{ 
+                height: '48px',
+                padding: '0 32px',
+                fontSize: '16px',
+                color: '#ffffff',
+                borderColor: '#00ff88',
+              }}
+            >
+              <Link to="/create">Продать товар</Link>
+            </Button>
           ) : (
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link to="/register" className="btn btn-primary text-lg px-8 py-4">
-                Начать торговлю
-                <ArrowRight className="ml-2 w-5 h-5" />
-              </Link>
-              <Link to="/feed" className="btn btn-secondary text-lg px-8 py-4">
-                Посмотреть ленту
-              </Link>
-            </div>
+            <Button 
+              size="large"
+              style={{ 
+                height: '48px',
+                padding: '0 32px',
+                fontSize: '16px',
+                color: '#ffffff',
+                borderColor: '#00ff88',
+              }}
+            >
+              <Link to="/register">Начать продавать</Link>
+            </Button>
           )}
-        </div>
-      </section>
+        </Space>
+      </div>
 
-      {/* Статистика */}
-      <section className="grid grid-cols-2 md:grid-cols-4 gap-8">
-        <div className="text-center">
-          <div className="text-3xl font-display font-bold text-primary-neon mb-2">1000+</div>
-          <div className="text-text-secondary">Активных пользователей</div>
-        </div>
-        <div className="text-center">
-          <div className="text-3xl font-display font-bold text-accent-neon mb-2">5000+</div>
-          <div className="text-text-secondary">Товаров на продажу</div>
-        </div>
-        <div className="text-center">
-          <div className="text-3xl font-display font-bold text-secondary-neon mb-2">100+</div>
-          <div className="text-text-secondary">Категорий железа</div>
-        </div>
-        <div className="text-center">
-          <div className="text-3xl font-display font-bold text-warning-neon mb-2">24/7</div>
-          <div className="text-text-secondary">Поддержка</div>
-        </div>
-      </section>
-
-      {/* Особенности */}
-      <section>
-        <h2 className="text-3xl font-display font-bold text-center text-gradient mb-12">
-          Почему HardWire?
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {features.map((feature, index) => (
-            <div key={index} className="card text-center hover:scale-105 transition-transform duration-300">
-              <div className="text-primary-neon mb-4 flex justify-center">
+      {/* Features */}
+      <Row gutter={[24, 24]} style={{ marginBottom: '64px' }}>
+        {features.map((feature, index) => (
+          <Col xs={24} sm={12} lg={6} key={index}>
+            <Card
+              style={{
+                height: '100%',
+                background: '#1a1a1a',
+                border: '1px solid #374151',
+                borderRadius: '12px',
+                textAlign: 'center',
+                transition: 'all 0.3s ease',
+              }}
+              bodyStyle={{ padding: '32px 24px' }}
+              hoverable
+            >
+              <div style={{ marginBottom: '16px' }}>
                 {feature.icon}
               </div>
-              <h3 className="text-xl font-semibold text-text-primary mb-3">
+              <Title level={4} style={{ color: '#ffffff', marginBottom: '8px' }}>
                 {feature.title}
-              </h3>
-              <p className="text-text-secondary">
+              </Title>
+              <Paragraph style={{ color: '#9ca3af', margin: 0 }}>
                 {feature.description}
-              </p>
-            </div>
-          ))}
-        </div>
-      </section>
+              </Paragraph>
+            </Card>
+          </Col>
+        ))}
+      </Row>
 
-      {/* CTA секция */}
-      <section className="text-center py-16 bg-gradient-to-r from-primary-neon/10 to-accent-neon/10 rounded-2xl border border-primary-neon/20">
-        <div className="max-w-3xl mx-auto">
-          <h2 className="text-4xl font-display font-bold text-gradient mb-6">
-            Готов начать торговлю?
-          </h2>
-          <p className="text-xl text-text-secondary mb-8">
-            Присоединяйся к крупнейшему сообществу энтузиастов железа
-          </p>
-          
+      {/* Stats */}
+      <Row gutter={[24, 24]} style={{ marginBottom: '64px' }}>
+        <Col xs={24} sm={8}>
+          <Card
+            style={{
+              background: '#1a1a1a',
+              border: '1px solid #374151',
+              borderRadius: '12px',
+              textAlign: 'center',
+            }}
+            bodyStyle={{ padding: '24px' }}
+          >
+            <Title level={2} style={{ color: '#00ff88', margin: 0 }}>
+              1,000+
+            </Title>
+            <Text style={{ color: '#9ca3af', fontSize: '16px' }}>
+              Активных товаров
+            </Text>
+          </Card>
+        </Col>
+        <Col xs={24} sm={8}>
+          <Card
+            style={{
+              background: '#1a1a1a',
+              border: '1px solid #374151',
+              borderRadius: '12px',
+              textAlign: 'center',
+            }}
+            bodyStyle={{ padding: '24px' }}
+          >
+            <Title level={2} style={{ color: '#00ff88', margin: 0 }}>
+              500+
+            </Title>
+            <Text style={{ color: '#9ca3af', fontSize: '16px' }}>
+              Довольных покупателей
+            </Text>
+          </Card>
+        </Col>
+        <Col xs={24} sm={8}>
+          <Card
+            style={{
+              background: '#1a1a1a',
+              border: '1px solid #374151',
+              borderRadius: '12px',
+              textAlign: 'center',
+            }}
+            bodyStyle={{ padding: '24px' }}
+          >
+            <Title level={2} style={{ color: '#00ff88', margin: 0 }}>
+              10+
+            </Title>
+            <Text style={{ color: '#9ca3af', fontSize: '16px' }}>
+              Категорий товаров
+            </Text>
+          </Card>
+        </Col>
+      </Row>
+
+      {/* CTA Section */}
+      <Card
+        style={{
+          background: 'linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%)',
+          border: '1px solid #374151',
+          borderRadius: '16px',
+          textAlign: 'center',
+        }}
+        bodyStyle={{ padding: '48px 24px' }}
+      >
+        <Title level={2} style={{ color: '#ffffff', marginBottom: '16px' }}>
+          Готов начать торговать?
+        </Title>
+        <Paragraph style={{ color: '#9ca3af', fontSize: '18px', marginBottom: '32px' }}>
+          Присоединяйся к сообществу HardWire и начни покупать и продавать комплектующие уже сегодня!
+        </Paragraph>
+        <Space size="large">
+          <Button 
+            type="primary" 
+            size="large"
+            style={{ 
+              background: '#00ff88',
+              borderColor: '#00ff88',
+              color: '#000',
+              height: '48px',
+              padding: '0 32px',
+              fontSize: '16px',
+              fontWeight: 'bold',
+            }}
+          >
+            <Link to="/feed" style={{ color: '#000' }}>
+              Перейти к товарам <ArrowRightOutlined />
+            </Link>
+          </Button>
           {!user && (
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link to="/register" className="btn btn-primary text-lg px-8 py-4">
-                Создать аккаунт
-                <Star className="ml-2 w-5 h-5" />
-              </Link>
-            </div>
+            <Button 
+              size="large"
+              style={{ 
+                height: '48px',
+                padding: '0 32px',
+                fontSize: '16px',
+                color: '#ffffff',
+                borderColor: '#00ff88',
+              }}
+            >
+              <Link to="/register">Создать аккаунт</Link>
+            </Button>
           )}
-        </div>
-      </section>
+        </Space>
+      </Card>
     </div>
   )
 }
