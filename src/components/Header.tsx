@@ -16,10 +16,14 @@ const Header: React.FC = () => {
 
   const handleSignOut = async () => {
     try {
+      console.log('Header: Начинаем выход из системы')
       await signOut()
+      console.log('Header: Выход успешен, перенаправляем на главную')
       navigate('/')
     } catch (error) {
-      // Обработка ошибки
+      console.error('Header: Ошибка при выходе:', error)
+      // Попробуем принудительно очистить состояние
+      window.location.href = '/'
     }
   }
 
@@ -35,10 +39,21 @@ const Header: React.FC = () => {
     {
       key: 'logout',
       icon: <LogoutOutlined />,
-      label: 'Выйти',
-      onClick: handleSignOut,
+      label: (
+        <div onClick={handleSignOut} style={{ cursor: 'pointer' }}>
+          Выйти
+        </div>
+      ),
     },
   ]
+
+  const handleMenuClick = ({ key }: { key: string }) => {
+    console.log('Header: Клик по меню, key:', key)
+    if (key === 'logout') {
+      console.log('Header: Выбран выход из системы')
+      handleSignOut()
+    }
+  }
 
   const menuItems = [
     {
@@ -157,7 +172,7 @@ const Header: React.FC = () => {
 
                   {/* Профиль */}
                   <Dropdown
-                    menu={{ items: userMenuItems }}
+                    menu={{ items: userMenuItems, onClick: handleMenuClick }}
                     placement="bottomRight"
                     trigger={['click']}
                   >
