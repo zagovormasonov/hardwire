@@ -181,29 +181,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       throw error
     }
 
-    console.log('AuthContext: Регистрация успешна, создаем профиль')
+    console.log('AuthContext: Регистрация успешна, пользователь создан')
 
     if (data.user) {
-      // Создаем профиль пользователя
-      const { error: profileError } = await supabase
-        .from('users')
-        .insert([
-          {
-            id: data.user.id,
-            email: data.user.email!,
-            full_name: fullName,
-            avatar_url: undefined,
-          },
-        ])
-
-      if (profileError) {
-        console.error('AuthContext: Ошибка создания профиля:', profileError)
-        throw profileError
-      }
-
-      console.log('AuthContext: Профиль создан, регистрация завершена')
+      console.log('AuthContext: Пользователь создан, возвращаем информацию о подтверждении email')
       
       // Возвращаем информацию о том, что нужно подтвердить email
+      // Профиль пользователя будет создан автоматически при первом входе
       return {
         success: true,
         needsEmailConfirmation: true,
