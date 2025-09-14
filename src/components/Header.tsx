@@ -193,18 +193,31 @@ const Header: React.FC = () => {
                 </>
               ) : (
                 <Space>
-                  <Button type="text" style={{ color: '#ffffff' }}>
-                    <Link to="/login">Войти</Link>
+                  <Button 
+                    type="text" 
+                    onClick={() => navigate('/login')}
+                    style={{ 
+                      color: '#ffffff',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    Войти
                   </Button>
                   <Button 
                     type="primary" 
+                    onClick={() => navigate('/register')}
                     style={{ 
                       background: '#00ff88',
                       borderColor: '#00ff88',
                       color: '#000',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
                     }}
                   >
-                    <Link to="/register" style={{ color: '#000' }}>Регистрация</Link>
+                    Регистрация
                   </Button>
                 </Space>
               )}
@@ -368,30 +381,40 @@ const Header: React.FC = () => {
             <Space direction="vertical" style={{ width: '100%' }}>
               <Button 
                 type="primary"
+                onClick={() => {
+                  navigate('/register')
+                  setMobileMenuOpen(false)
+                }}
                 style={{ 
                   background: '#00ff88',
                   borderColor: '#00ff88',
                   color: '#000',
                   height: '44px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
                 }}
                 block
               >
-                <Link to="/register" onClick={() => setMobileMenuOpen(false)}>
-                  Регистрация
-                </Link>
+                Регистрация
               </Button>
               
               <Button 
+                onClick={() => {
+                  navigate('/login')
+                  setMobileMenuOpen(false)
+                }}
                 style={{ 
                   color: '#ffffff', 
                   borderColor: '#374151',
                   height: '44px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
                 }}
                 block
               >
-                <Link to="/login" onClick={() => setMobileMenuOpen(false)}>
-                  Войти
-                </Link>
+                Войти
               </Button>
             </Space>
           </div>
