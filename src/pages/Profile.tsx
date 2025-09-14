@@ -31,7 +31,7 @@ import {
 import { useAuth } from '../contexts/AuthContext'
 import { useNotifications } from '../contexts/NotificationContext'
 import { supabase } from '../lib/supabase'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 
 const { Title, Text, Paragraph } = Typography
 const { confirm } = Modal
@@ -72,6 +72,7 @@ interface UserStats {
 const Profile: React.FC = () => {
   const { user, updateProfile } = useAuth()
   const { addNotification } = useNotifications()
+  const navigate = useNavigate()
   const [isEditing, setIsEditing] = useState(false)
   const [formData, setFormData] = useState({
     full_name: user?.full_name || ''
@@ -658,6 +659,7 @@ const Profile: React.FC = () => {
                         type="text"
                         icon={<EyeOutlined />}
                         size="small"
+                        onClick={() => navigate(`/product/${product.id}`)}
                         style={{ 
                           color: '#ffffff',
                           display: 'flex',
@@ -665,12 +667,13 @@ const Profile: React.FC = () => {
                           justifyContent: 'center',
                         }}
                       >
-                        <Link to={`/product/${product.id}`}>Просмотр</Link>
+                        Просмотр
                       </Button>
                       <Button
                         type="text"
                         icon={<EditOutlined />}
                         size="small"
+                        onClick={() => navigate(`/edit/${product.id}`)}
                         style={{ 
                           color: '#00ff88',
                           display: 'flex',
@@ -678,7 +681,7 @@ const Profile: React.FC = () => {
                           justifyContent: 'center',
                         }}
                       >
-                        <Link to={`/edit/${product.id}`}>Редактировать</Link>
+                        Редактировать
                       </Button>
                     </Space>
                     
@@ -815,6 +818,7 @@ const Profile: React.FC = () => {
                         type="primary"
                         size="small"
                         icon={<EyeOutlined />}
+                        onClick={() => navigate(`/product/${favorite.products!.id}`)}
                         style={{
                           background: '#00ff88',
                           borderColor: '#00ff88',
@@ -824,9 +828,7 @@ const Profile: React.FC = () => {
                           justifyContent: 'center',
                         }}
                       >
-                        <Link to={`/product/${favorite.products.id}`} style={{ color: '#000' }}>
-                          Перейти к товару
-                        </Link>
+                        Перейти к товару
                       </Button>
                     )}
                   </div>

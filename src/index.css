@@ -1787,10 +1787,6 @@ input[type="radio"]:focus {
   justify-content: center !important;
 }
 
-.ant-btn > * {
-  pointer-events: none;
-}
-
 /* Улучшения для ссылок в кнопках */
 .ant-btn a {
   display: flex;
