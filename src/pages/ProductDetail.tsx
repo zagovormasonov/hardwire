@@ -415,7 +415,7 @@ const ProductDetail: React.FC = () => {
         useSimpleChat ? (
           <ChatSimple
             sellerId={product?.seller_id || ''}
-            sellerName={product?.users?.full_name || 'Продавец'}
+            sellerName={product?.users?.full_name || product?.users?.email?.split('@')[0] || 'Продавец'}
             sellerAvatar={product?.users?.avatar_url}
             productTitle={product?.title}
             onClose={() => setChatVisible(false)}

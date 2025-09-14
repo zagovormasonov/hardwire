@@ -319,12 +319,23 @@ const ChatSimple: React.FC<ChatSimpleProps> = ({
           background: '#1a1a1a', 
           border: '1px solid #374151', 
           borderRadius: '12px',
-          padding: 0
+          padding: 0,
+          height: '600px',
+          display: 'flex',
+          flexDirection: 'column'
         },
         header: { 
           background: '#1a1a1a', 
           borderBottom: '1px solid #374151',
-          padding: '16px 24px'
+          padding: '16px 24px',
+          flexShrink: 0
+        },
+        body: {
+          flex: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          padding: 0,
+          overflow: 'hidden'
         },
         mask: { backdropFilter: 'blur(5px)' },
       }}
@@ -332,7 +343,7 @@ const ChatSimple: React.FC<ChatSimpleProps> = ({
       {/* Область сообщений */}
       <div 
         style={{ 
-          height: '400px',
+          flex: 1,
           overflowY: 'auto', 
           padding: '16px',
           display: 'flex',
@@ -423,7 +434,12 @@ const ChatSimple: React.FC<ChatSimpleProps> = ({
       <Divider style={{ margin: 0, borderColor: '#374151' }} />
 
       {/* Поле ввода */}
-      <div style={{ padding: '16px' }}>
+      <div style={{ 
+        padding: '16px', 
+        borderTop: '1px solid #374151',
+        background: '#1a1a1a',
+        flexShrink: 0
+      }}>
         <Space.Compact style={{ width: '100%' }}>
           <TextArea
             value={newMessage}
