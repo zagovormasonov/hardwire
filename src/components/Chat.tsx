@@ -134,6 +134,56 @@ const Chat: React.FC<ChatProps> = ({
     }
   }, [user, sellerId])
 
+  // Fallback: периодическое обновление сообщений (если WebSocket не работает)
+  useEffect(() => {
+    if (!user) return
+
+    console.log('Chat: Запускаем fallback обновление сообщений')
+    
+    const updateMessages = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('messages')
+          .select(`
+            *,
+            sender:users!messages_sender_id_fkey(name, avatar_url)
+          `)
+          .or(`and(sender_id.eq.${user.id},receiver_id.eq.${sellerId}),and(sender_id.eq.${sellerId},receiver_id.eq.${user.id})`)
+          .order('created_at', { ascending: true })
+
+        if (error) {
+          console.error('Chat: Ошибка fallback обновления:', error)
+          return
+        }
+
+        const updatedMessages = data?.map(msg => ({
+          ...msg,
+          sender_name: (msg.sender as any)?.name,
+          sender_avatar: (msg.sender as any)?.avatar_url
+        })) || []
+
+        setMessages(prev => {
+          // Проверяем, есть ли новые сообщения
+          if (prev.length !== updatedMessages.length) {
+            console.log('Chat: Fallback обнаружил новые сообщения')
+            return updatedMessages
+          }
+          return prev
+        })
+      } catch (error) {
+        console.error('Chat: Ошибка при fallback обновлении:', error)
+      }
+    }
+
+    // Обновляем каждые 3 секунды как fallback
+    const interval = setInterval(updateMessages, 3000)
+
+    return () => {
+      console.log('Chat: Останавливаем fallback обновление')
+      clearInterval(interval)
+    }
+  }, [user, sellerId])
+
   // Прокручиваем к последнему сообщению при загрузке
   useEffect(() => {
     if (!loading && messages.length > 0) {
@@ -165,7 +215,25 @@ const Chat: React.FC<ChatProps> = ({
       }
 
       console.log('Chat: Сообщение отправлено успешно')
+      
+      // Добавляем сообщение в локальное состояние сразу
+      const newMessageObj: Message = {
+        id: `temp-${Date.now()}`, // Временный ID
+        sender_id: user.id,
+        receiver_id: sellerId,
+        message_text: newMessage.trim(),
+        created_at: new Date().toISOString(),
+        sender_name: user.full_name || 'Пользователь',
+        sender_avatar: user.avatar_url
+      }
+      
+      setMessages(prev => [...prev, newMessageObj])
       setNewMessage('')
+      
+      // Прокручиваем к последнему сообщению
+      setTimeout(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+      }, 100)
       
       // Отправляем push-уведомление
       try {
@@ -173,7 +241,7 @@ const Chat: React.FC<ChatProps> = ({
           body: {
             user_id: sellerId,
             title: 'Новое сообщение',
-            body: `${user.full_name || 'Пользователь'} написал вам: ${newMessage.substring(0, 50)}${newMessage.length > 50 ? '...' : ''}`,
+            body: `${user.full_name || 'Пользователь'} написал вам: ${newMessageObj.message_text.substring(0, 50)}${newMessageObj.message_text.length > 50 ? '...' : ''}`,
             data: {
               type: 'message',
               sender_id: user.id,
