@@ -124,7 +124,14 @@ const Chat: React.FC<ChatProps> = ({
           }, 100)
         }
       )
-      .subscribe()
+      .subscribe((status) => {
+        console.log('Chat: WebSocket статус:', status)
+        if (status === 'SUBSCRIBED') {
+          console.log('Chat: WebSocket успешно подключен')
+        } else if (status === 'CHANNEL_ERROR') {
+          console.log('Chat: Ошибка WebSocket подключения')
+        }
+      })
 
     return () => {
       console.log('Chat: Отписываемся от WebSocket канала')
@@ -175,8 +182,8 @@ const Chat: React.FC<ChatProps> = ({
       }
     }
 
-    // Обновляем каждые 3 секунды как fallback
-    const interval = setInterval(updateMessages, 3000)
+    // Обновляем каждые 1.5 секунды как fallback (более агрессивно)
+    const interval = setInterval(updateMessages, 1500)
 
     return () => {
       console.log('Chat: Останавливаем fallback обновление')
@@ -234,6 +241,31 @@ const Chat: React.FC<ChatProps> = ({
       setTimeout(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
       }, 100)
+      
+      // Принудительно обновляем сообщения через 1 секунду (на случай если WebSocket не работает)
+      setTimeout(async () => {
+        try {
+          const { data } = await supabase
+            .from('messages')
+            .select(`
+              *,
+              sender:users!messages_sender_id_fkey(name, avatar_url)
+            `)
+            .or(`and(sender_id.eq.${user.id},receiver_id.eq.${sellerId}),and(sender_id.eq.${sellerId},receiver_id.eq.${user.id})`)
+            .order('created_at', { ascending: true })
+
+          const updatedMessages = data?.map(msg => ({
+            ...msg,
+            sender_name: (msg.sender as any)?.name,
+            sender_avatar: (msg.sender as any)?.avatar_url
+          })) || []
+
+          setMessages(updatedMessages)
+          console.log('Chat: Принудительное обновление выполнено')
+        } catch (error) {
+          console.error('Chat: Ошибка принудительного обновления:', error)
+        }
+      }, 1000)
       
       // Отправляем push-уведомление
       try {
