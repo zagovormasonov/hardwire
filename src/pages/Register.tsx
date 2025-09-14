@@ -15,14 +15,17 @@ const Register: React.FC = () => {
     setLoading(true)
     try {
       console.log('Register: Начинаем регистрацию пользователя:', values.email)
+      
+      // Показываем сообщение о подтверждении email сразу
+      message.success(
+        `Регистрация успешна! Проверьте почту ${values.email} и подтвердите аккаунт.`,
+        8
+      )
+      
       const result = await signUp(values.email, values.password, values.fullName)
       
       if (result?.needsEmailConfirmation) {
         console.log('Register: Требуется подтверждение email')
-        message.success(
-          `Регистрация успешна! Проверьте почту ${result.email} и подтвердите аккаунт.`,
-          8
-        )
         
         // Перенаправляем на страницу входа
         setTimeout(() => {
@@ -30,7 +33,6 @@ const Register: React.FC = () => {
         }, 2000)
       } else {
         console.log('Register: Регистрация успешна, перенаправляем на главную')
-        message.success('Регистрация успешна! Добро пожаловать!')
         
         setTimeout(() => {
           navigate('/')
