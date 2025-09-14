@@ -24,6 +24,7 @@ import {
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import { useNotifications } from '../contexts/NotificationContext'
+import MessageModal from '../components/MessageModal'
 
 const { Title, Text, Paragraph } = Typography
 
@@ -55,6 +56,7 @@ const ProductDetail: React.FC = () => {
   const [product, setProduct] = useState<Product | null>(null)
   const [loading, setLoading] = useState(true)
   const [isLiked, setIsLiked] = useState(false)
+  const [messageModalVisible, setMessageModalVisible] = useState(false)
 
   useEffect(() => {
     if (id) {
@@ -335,6 +337,13 @@ const ProductDetail: React.FC = () => {
                 type="primary"
                 icon={<MessageOutlined />}
                 size="large"
+                onClick={() => {
+                  if (!user) {
+                    navigate('/login')
+                    return
+                  }
+                  setMessageModalVisible(true)
+                }}
                 style={{
                   background: '#00ff88',
                   borderColor: '#00ff88',
@@ -391,6 +400,19 @@ const ProductDetail: React.FC = () => {
           </Card>
         </Col>
       </Row>
+      
+      {/* Модальное окно для отправки сообщения */}
+      {product && user && (
+        <MessageModal
+          visible={messageModalVisible}
+          onClose={() => setMessageModalVisible(false)}
+          sellerId={product.seller_id}
+          sellerName={product.users?.full_name || 'Продавец'}
+          productTitle={product.title}
+          buyerId={user.id}
+          buyerName={user.full_name}
+        />
+      )}
     </div>
   )
 }
